@@ -52,8 +52,8 @@ export function ToolCard({ tool }: ToolCardProps) {
     <div
       onClick={() => selectTool(tool.id)}
       className={`
-        bg-primary border border-border rounded-lg p-4 cursor-pointer
-        transition-colors hover:bg-panel
+        bg-surface border border-border rounded-lg p-4 cursor-pointer
+        transition-colors hover:bg-elevated
         ${isSelected ? 'ring-2 ring-brand ring-inset' : ''}
       `}
     >
@@ -97,7 +97,7 @@ export function ToolCard({ tool }: ToolCardProps) {
       {tool.tags && tool.tags.length > 0 && (
         <div className="flex gap-1 flex-wrap mt-2">
           {tool.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-secondary rounded text-low">
+            <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-muted rounded text-low">
               {tag}
             </span>
           ))}

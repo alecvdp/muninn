@@ -20,7 +20,7 @@ export default function AgentsPage() {
           <select
             value={filterInterface || ''}
             onChange={(e) => setFilterInterface(e.target.value || null)}
-            className="bg-secondary border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
+            className="bg-muted border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="">All</option>
             {interfaces.map((i) => (
@@ -33,7 +33,7 @@ export default function AgentsPage() {
           <select
             value={filterMachine || ''}
             onChange={(e) => setFilterMachine(e.target.value || null)}
-            className="bg-secondary border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
+            className="bg-muted border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="">All</option>
             {machines.map((m) => (

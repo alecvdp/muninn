@@ -15,7 +15,7 @@ export function AppBar() {
   const navigate = useNavigate();
 
   return (
-    <div className="w-12 h-screen bg-secondary flex flex-col items-center py-4 border-r border-border">
+    <div className="w-12 h-screen bg-muted flex flex-col items-center py-4 border-r border-border">
       <div className="flex-1 flex flex-col gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -29,8 +29,8 @@ export function AppBar() {
               }}
               className={`p-2 rounded-lg transition-colors ${
                 isActive
-                  ? 'text-brand bg-panel'
-                  : 'text-low hover:text-normal hover:bg-panel'
+                  ? 'text-brand bg-elevated'
+                  : 'text-low hover:text-normal hover:bg-elevated'
               }`}
               title={item.label}
             >

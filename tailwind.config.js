@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
+        surface: 'hsl(var(--bg-surface) / <alpha-value>)',
+        muted: 'hsl(var(--bg-muted) / <alpha-value>)',
+        elevated: 'hsl(var(--bg-elevated) / <alpha-value>)',
         high: 'hsl(var(--text-high) / <alpha-value>)',
         normal: 'hsl(var(--text-normal) / <alpha-value>)',
         low: 'hsl(var(--text-low) / <alpha-value>)',
-        primary: 'hsl(var(--bg-primary) / <alpha-value>)',
-        secondary: 'hsl(var(--bg-secondary) / <alpha-value>)',
-        panel: 'hsl(var(--bg-panel) / <alpha-value>)',
         border: 'hsl(var(--border) / <alpha-value>)',
         brand: 'hsl(var(--brand) / <alpha-value>)',
         'brand-hover': 'hsl(var(--brand-hover) / <alpha-value>)',

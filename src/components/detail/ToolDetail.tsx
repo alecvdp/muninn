@@ -81,7 +81,7 @@ export function ToolDetail() {
           </button>
           <button
             onClick={togglePanel}
-            className="p-2 text-low hover:text-normal hover:bg-panel rounded-lg"
+            className="p-2 text-low hover:text-normal hover:bg-elevated rounded-lg"
           >
             <X size={18} />
           </button>
@@ -94,7 +94,7 @@ export function ToolDetail() {
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
           placeholder="Tool name"
         />
       </div>
@@ -104,7 +104,7 @@ export function ToolDetail() {
         <select
           value={formData.category}
           onChange={(e) => setFormData({ ...formData, category: e.target.value as ToolFormData['category'] })}
-          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
         >
           <option value="using">Using</option>
           <option value="to-check-out">To Check Out</option>
@@ -118,7 +118,7 @@ export function ToolDetail() {
             type="number"
             value={formData.cost}
             onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
-            className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
           />
         </div>
         <div>
@@ -126,7 +126,7 @@ export function ToolDetail() {
           <select
             value={formData.billing_cycle}
             onChange={(e) => setFormData({ ...formData, billing_cycle: e.target.value as ToolFormData['billing_cycle'] })}
-            className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="monthly">Monthly</option>
             <option value="annual">Annual</option>
@@ -141,7 +141,7 @@ export function ToolDetail() {
           type="date"
           value={formData.renewal_date}
           onChange={(e) => setFormData({ ...formData, renewal_date: e.target.value })}
-          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
         />
       </div>
 
@@ -155,7 +155,7 @@ export function ToolDetail() {
               className={`px-3 py-1 rounded-lg text-xs capitalize transition-colors ${
                 formData.platform.includes(platform)
                   ? 'bg-brand text-white'
-                  : 'bg-secondary text-low hover:bg-panel'
+                  : 'bg-muted text-low hover:bg-elevated'
               }`}
             >
               {platform}
@@ -170,7 +170,7 @@ export function ToolDetail() {
           type="url"
           value={formData.url}
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
           placeholder="https://..."
         />
       </div>
@@ -181,7 +181,7 @@ export function ToolDetail() {
           type="text"
           value={formData.tags.join(', ')}
           onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) })}
-          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
           placeholder="AI, productivity, writing"
         />
       </div>
@@ -191,7 +191,7 @@ export function ToolDetail() {
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand h-24 resize-none"
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand h-24 resize-none"
           placeholder="Notes about this tool..."
         />
       </div>

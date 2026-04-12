@@ -12,7 +12,7 @@ function App() {
   const selectedProjectId = useProjectsStore((s) => s.selectedProjectId)
 
   return (
-    <div className="flex h-screen bg-primary text-normal">
+    <div className="flex h-screen bg-surface text-normal">
       <AppBar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />

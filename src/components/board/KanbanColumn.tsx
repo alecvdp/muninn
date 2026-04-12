@@ -33,7 +33,7 @@ export function KanbanColumn({ id, title, projects, children }: KanbanColumnProp
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="flex-1 bg-secondary/50 rounded-lg p-2 min-h-[200px]"
+            className="flex-1 bg-muted/50 rounded-lg p-2 min-h-[200px]"
           >
             {children}
             {provided.placeholder}

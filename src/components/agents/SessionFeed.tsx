@@ -41,7 +41,7 @@ export function SessionFeed() {
     <div className="space-y-6 p-4">
       {Object.entries(grouped).map(([date, dateSessions]) => (
         <div key={date}>
-          <h3 className="text-low text-sm font-medium mb-3 sticky top-0 bg-primary py-2">
+          <h3 className="text-low text-sm font-medium mb-3 sticky top-0 bg-surface py-2">
             {date}
           </h3>
           <div className="space-y-3">

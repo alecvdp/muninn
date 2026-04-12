@@ -18,12 +18,12 @@ export function DetailPanel({ children }: { children?: React.ReactNode }) {
   if (!isPanelOpen) return null;
 
   return (
-    <div className="h-full bg-secondary border-l border-border flex flex-col w-[440px] min-w-[360px] max-w-[600px]">
+    <div className="h-full bg-muted border-l border-border flex flex-col w-[440px] min-w-[360px] max-w-[600px]">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <span className="text-normal font-medium">Details</span>
         <button
           onClick={togglePanel}
-          className="p-1 rounded text-low hover:text-normal hover:bg-panel transition-colors"
+          className="p-1 rounded text-low hover:text-normal hover:bg-elevated transition-colors"
         >
           <XIcon size={18} />
         </button>

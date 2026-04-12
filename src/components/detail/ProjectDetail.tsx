@@ -134,7 +134,7 @@ function MemoriesList({ memories }: { memories: MemoryRow[] }) {
       {memories.map((m) => (
         <li key={m.id} className="text-xs border border-border rounded-md p-2">
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="px-1 py-0.5 bg-panel rounded text-low text-[10px]">{m.category}</span>
+            <span className="px-1 py-0.5 bg-elevated rounded text-low text-[10px]">{m.category}</span>
             {m.confidence && (
               <span className="text-[10px] text-low">{m.confidence}</span>
             )}
@@ -176,7 +176,7 @@ function TechStackEditor({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-panel border border-border rounded-full text-low"
+            className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 bg-elevated border border-border rounded-full text-low"
           >
             <Tag size={10} />
             {tag}
@@ -285,7 +285,7 @@ export function ProjectDetail() {
                 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20 transition-colors cursor-pointer"
             >
               {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s} className="bg-secondary text-normal">
+                <option key={s} value={s} className="bg-muted text-normal">
                   {s.replace('-', ' ')}
                 </option>
               ))}

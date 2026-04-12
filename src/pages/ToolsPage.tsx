@@ -20,19 +20,19 @@ export default function ToolsPage() {
     <div className="h-full flex flex-col">
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 py-4 border-b border-border">
-        <div className="bg-secondary rounded-lg p-3">
+        <div className="bg-muted rounded-lg p-3">
           <div className="text-low text-xs mb-1">Monthly Cost</div>
           <div className="text-normal font-medium">${totalMonthlyCost().toFixed(0)}</div>
         </div>
-        <div className="bg-secondary rounded-lg p-3">
+        <div className="bg-muted rounded-lg p-3">
           <div className="text-low text-xs mb-1">Annual Cost</div>
           <div className="text-normal font-medium">${totalAnnualCost().toFixed(0)}</div>
         </div>
-        <div className="bg-secondary rounded-lg p-3">
+        <div className="bg-muted rounded-lg p-3">
           <div className="text-low text-xs mb-1">Active Tools</div>
           <div className="text-normal font-medium">{activeToolCount()}</div>
         </div>
-        <div className="bg-secondary rounded-lg p-3">
+        <div className="bg-muted rounded-lg p-3">
           <div className="text-low text-xs mb-1">Renewing Soon</div>
           <div className={`font-medium ${renewingWithin30Days() > 0 ? 'text-orange-400' : 'text-normal'}`}>
             {renewingWithin30Days()}

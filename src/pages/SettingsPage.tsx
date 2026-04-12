@@ -33,7 +33,7 @@ export default function SettingsPage() {
     <div className="p-6 max-w-2xl">
       <h2 className="text-normal font-medium text-lg mb-6">Settings</h2>
 
-      <div className="bg-secondary rounded-lg p-4 mb-4">
+      <div className="bg-muted rounded-lg p-4 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-green-500" />
           <div>
@@ -44,7 +44,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="bg-secondary rounded-lg p-4 mb-4">
+      <div className="bg-muted rounded-lg p-4 mb-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-normal font-medium">Theme</div>
@@ -54,7 +54,7 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={toggleTheme}
-            className="p-2 bg-panel rounded-lg text-low hover:text-normal transition-colors"
+            className="p-2 bg-elevated rounded-lg text-low hover:text-normal transition-colors"
           >
             {theme === 'dark' ? <MoonIcon aria-hidden="true" /> : <SunIcon aria-hidden="true" />}
           </button>

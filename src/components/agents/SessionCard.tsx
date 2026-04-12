@@ -31,14 +31,14 @@ export function SessionCard({ session }: SessionCardProps) {
   };
 
   return (
-    <div className="bg-primary border border-border rounded-lg p-4">
+    <div className="bg-surface border border-border rounded-lg p-4">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs px-2 py-0.5 bg-secondary rounded text-low">
+          <span className="text-xs px-2 py-0.5 bg-muted rounded text-low">
             {session.interface}
           </span>
           {session.machine && (
-            <span className="text-xs px-2 py-0.5 bg-secondary rounded text-low flex items-center gap-1">
+            <span className="text-xs px-2 py-0.5 bg-muted rounded text-low flex items-center gap-1">
               <DesktopIcon size={10} />
               {session.machine}
             </span>

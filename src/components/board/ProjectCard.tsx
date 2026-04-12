@@ -22,9 +22,9 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
           {...provided.dragHandleProps}
           onClick={() => selectProject(project.id)}
           className={`
-            bg-primary border border-border rounded-lg p-3 mb-2
+            bg-surface border border-border rounded-lg p-3 mb-2
             cursor-pointer transition-colors
-            hover:bg-panel
+            hover:bg-elevated
             ${isSelected ? 'ring-2 ring-brand ring-inset' : ''}
             ${snapshot.isDragging ? 'opacity-50' : ''}
           `}
@@ -49,7 +49,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
                 {project.tech_stack.slice(0, 3).map((tech) => (
                   <span
                     key={tech}
-                    className="text-[10px] px-1.5 py-0.5 bg-secondary rounded text-low"
+                    className="text-[10px] px-1.5 py-0.5 bg-muted rounded text-low"
                   >
                     {tech}
                   </span>
