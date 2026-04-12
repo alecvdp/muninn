@@ -1,4 +1,5 @@
 import { Draggable } from '@hello-pangea/dnd';
+import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
 import type { Database } from '../../database.types';
 
@@ -10,7 +11,9 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, index }: ProjectCardProps) {
-  const { selectedProjectId, selectProject } = useUIStore();
+  const selectedProjectId = useProjectsStore((s) => s.selectedProjectId);
+  const selectProject = useProjectsStore((s) => s.selectProject);
+  const openPanel = useUIStore((s) => s.openPanel);
   const isSelected = selectedProjectId === project.id;
 
   return (
@@ -20,7 +23,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          onClick={() => selectProject(project.id)}
+          onClick={() => { selectProject(project.id); openPanel(); }}
           className={`
             bg-surface border border-border rounded-lg p-3 mb-2
             cursor-pointer transition-colors

@@ -1,4 +1,6 @@
+import { useToolsStore } from '../../store/tools';
 import { useUIStore } from '../../store/ui';
+import { isWithin30Days } from '../../lib/dates';
 import type { Database } from '../../database.types';
 import {
   Desktop,
@@ -23,17 +25,10 @@ const platformIcons: Record<string, React.ComponentType<{ size?: number }>> = {
   android: DeviceMobile,
 };
 
-const isWithin30Days = (date: string | null): boolean => {
-  if (!date) return false;
-  const renewal = new Date(date);
-  const now = new Date();
-  const diffTime = renewal.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays >= 0 && diffDays <= 30;
-};
-
 export function ToolCard({ tool }: ToolCardProps) {
-  const { selectedToolId, selectTool } = useUIStore();
+  const selectedToolId = useToolsStore((s) => s.selectedToolId);
+  const selectTool = useToolsStore((s) => s.selectTool);
+  const openPanel = useUIStore((s) => s.openPanel);
   const isSelected = selectedToolId === tool.id;
   const isRenewingSoon = isWithin30Days(tool.renewal_date);
 
@@ -50,7 +45,7 @@ export function ToolCard({ tool }: ToolCardProps) {
 
   return (
     <div
-      onClick={() => selectTool(tool.id)}
+      onClick={() => { selectTool(tool.id); openPanel(); }}
       className={`
         bg-surface border border-border rounded-lg p-4 cursor-pointer
         transition-colors hover:bg-elevated

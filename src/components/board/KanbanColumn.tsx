@@ -7,7 +7,6 @@ type ProjectRow = Database['public']['Tables']['projects']['Row'];
 interface KanbanColumnProps {
   id: string;
   title: string;
-  color: string;
   projects: ProjectRow[];
   children?: ReactNode;
 }

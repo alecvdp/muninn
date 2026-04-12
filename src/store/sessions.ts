@@ -13,6 +13,7 @@ interface SessionsState {
   filterMachine: string | null;
   filterProject: string | null;
   fetchSessions: () => Promise<void>;
+  clearError: () => void;
   setFilterInterface: (filter: string | null) => void;
   setFilterMachine: (filter: string | null) => void;
   setFilterProject: (filter: string | null) => void;
@@ -40,6 +41,8 @@ export const useSessionsStore = create<SessionsState>()(
       }
       set({ sessions: data ?? [], isLoading: false, error: null }, false, 'sessions/fetch:success');
     },
+
+    clearError: () => set({ error: null }, false, 'sessions/clearError'),
 
     setFilterInterface: (filter) => set({ filterInterface: filter }, false, 'sessions/filter:interface'),
     setFilterMachine: (filter) => set({ filterMachine: filter }, false, 'sessions/filter:machine'),

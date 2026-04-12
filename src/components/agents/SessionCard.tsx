@@ -1,7 +1,8 @@
+import { useNavigate } from 'react-router';
+import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
 import type { Database } from '../../database.types';
-import { DesktopIcon } from '@phosphor-icons/react/dist/csr/Desktop';
-import { ClockIcon } from '@phosphor-icons/react/dist/csr/Clock';
+import { Desktop, Clock } from '@phosphor-icons/react';
 
 type SessionRow = Database['public']['Tables']['agent_sessions']['Row'];
 
@@ -10,7 +11,10 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session }: SessionCardProps) {
-  const { setView, selectProject } = useUIStore();
+  const selectProject = useProjectsStore((s) => s.selectProject);
+  const openPanel = useUIStore((s) => s.openPanel);
+  const setView = useUIStore((s) => s.setView);
+  const navigate = useNavigate();
 
   const formatDuration = (): string => {
     if (!session.started_at || !session.ended_at) return '—';
@@ -26,7 +30,9 @@ export function SessionCard({ session }: SessionCardProps) {
   const handleProjectClick = () => {
     if (session.project_id) {
       selectProject(session.project_id);
+      openPanel();
       setView('board');
+      navigate('/');
     }
   };
 
@@ -39,13 +45,13 @@ export function SessionCard({ session }: SessionCardProps) {
           </span>
           {session.machine && (
             <span className="text-xs px-2 py-0.5 bg-muted rounded text-low flex items-center gap-1">
-              <DesktopIcon size={10} />
+              <Desktop size={10} />
               {session.machine}
             </span>
           )}
         </div>
         <span className="text-low text-xs flex items-center gap-1">
-          <ClockIcon size={12} />
+          <Clock size={12} />
           {formatDuration()}
         </span>
       </div>

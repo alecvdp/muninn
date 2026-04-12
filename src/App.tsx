@@ -4,12 +4,21 @@ import { Navbar } from './components/layout/Navbar'
 import { DetailPanel } from './components/layout/DetailPanel'
 import { ToolDetail } from './components/detail/ToolDetail'
 import { ProjectDetail } from './components/detail/ProjectDetail'
+import { CreateProjectDetail } from './components/detail/CreateProjectDetail'
+import { ErrorToast } from './components/ui/ErrorToast'
 import { useToolsStore } from './store/tools'
 import { useProjectsStore } from './store/projects'
 
 function App() {
   const selectedToolId = useToolsStore((s) => s.selectedToolId)
   const selectedProjectId = useProjectsStore((s) => s.selectedProjectId)
+
+  const renderDetailContent = () => {
+    if (selectedToolId) return <ToolDetail />
+    if (selectedProjectId === 'new') return <CreateProjectDetail />
+    if (selectedProjectId) return <ProjectDetail />
+    return null
+  }
 
   return (
     <div className="flex h-screen bg-surface text-normal">
@@ -21,10 +30,11 @@ function App() {
             <Outlet />
           </main>
           <DetailPanel>
-            {selectedToolId ? <ToolDetail /> : selectedProjectId ? <ProjectDetail /> : null}
+            {renderDetailContent()}
           </DetailPanel>
         </div>
       </div>
+      <ErrorToast />
     </div>
   )
 }

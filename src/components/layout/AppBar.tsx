@@ -1,5 +1,6 @@
 import { Kanban, Robot, Lightning, Gear } from '@phosphor-icons/react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
+import { useEffect } from 'react';
 import { useUIStore } from '../../store/ui';
 
 const navItems = [
@@ -9,10 +10,25 @@ const navItems = [
   { id: 'settings' as const, path: '/settings', icon: Gear, label: 'Settings' },
 ];
 
+const pathToView: Record<string, 'board' | 'tools' | 'agents' | 'settings'> = {
+  '/': 'board',
+  '/tools': 'tools',
+  '/agents': 'agents',
+  '/settings': 'settings',
+};
+
 export function AppBar() {
   const activeView = useUIStore((s) => s.activeView);
   const setView = useUIStore((s) => s.setView);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const view = pathToView[location.pathname];
+    if (view && view !== activeView) {
+      setView(view);
+    }
+  }, [location.pathname, activeView, setView]);
 
   return (
     <div className="w-12 h-screen bg-muted flex flex-col items-center py-4 border-r border-border">

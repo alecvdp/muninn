@@ -5,8 +5,8 @@ import { useToolsStore } from '../store/tools';
 import { useUIStore } from '../store/ui';
 
 export default function ToolsPage() {
-  const { tools, fetchTools, subscribeToTools, isLoading, totalMonthlyCost, totalAnnualCost, activeToolCount, renewingWithin30Days } = useToolsStore();
-  const { selectTool } = useUIStore();
+  const { tools, fetchTools, subscribeToTools, isLoading, totalMonthlyCost, totalAnnualCost, activeToolCount, renewingWithin30Days, selectTool } = useToolsStore();
+  const openPanel = useUIStore((s) => s.openPanel);
 
   useEffect(() => {
     void fetchTools();
@@ -44,7 +44,7 @@ export default function ToolsPage() {
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-normal font-medium">AI Tools</h2>
         <button
-          onClick={() => selectTool('new')}
+          onClick={() => { selectTool('new'); openPanel(); }}
           className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white rounded-lg text-sm hover:bg-brand-hover transition-colors"
         >
           <Plus size={16} />
