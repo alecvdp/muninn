@@ -1,0 +1,23 @@
+{
+  "active_plan": "/home/alec/git/muninn/.sisyphus/plans/muninn-mvp.md",
+  "started_at": "2026-04-11T22:54:56.968Z",
+  "session_ids": [
+    "ses_281835fedffejfpDBRsALjajtp"
+  ],
+  "session_origins": {
+    "ses_281835fedffejfpDBRsALjajtp": "direct"
+  },
+  "plan_name": "muninn-mvp",
+  "agent": "atlas",
+  "task_sessions": {
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_2811e3aabffeVwSU8yS3SFhFVq",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-11T23:30:55.975Z"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --text-high: 0 0% 96%;
+    --text-normal: 0 0% 77%;
+    --text-low: 0 0% 56%;
+    --bg-primary: 0 0% 13%;
+    --bg-secondary: 0 0% 11%;
+    --bg-panel: 0 0% 16%;
+    --border: 0 0% 20%;
+    --brand: 25 82% 54%;
+    --brand-hover: 25 75% 62%;
+    --success: 117 38% 50%;
+    --error: 0 59% 57%;
+    --info: 210 50% 55%;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    @apply bg-primary text-normal font-sans text-sm;
+  }
+}
