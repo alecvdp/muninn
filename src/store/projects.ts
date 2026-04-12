@@ -23,6 +23,7 @@ interface ProjectsState {
   updateBoardStatus: (id: string, status: string) => Promise<ProjectRow | null>;
   updateBoardPosition: (id: string, position: number) => Promise<ProjectRow | null>;
   selectProject: (id: string | null) => void;
+  clearError: () => void;
 }
 
 const boardColumns = ['idea', 'todo', 'in-progress', 'paused', 'done'];
@@ -162,5 +163,7 @@ export const useProjectsStore = create<ProjectsState>()(
         false,
         'projects/selectProject',
       ),
+
+    clearError: () => set({ error: null }, false, 'projects/clearError'),
   }), { name: 'projects-store' }),
 );

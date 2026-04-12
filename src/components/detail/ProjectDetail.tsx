@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   LinkSimple,
   FolderOpen,
@@ -6,8 +6,10 @@ import {
   Brain,
   Tag,
   Lightning,
+  Trash,
 } from '@phosphor-icons/react';
 import { useProjectsStore } from '../../store/projects';
+import { useUIStore } from '../../store/ui';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../database.types';
 
@@ -205,38 +207,64 @@ function TechStackEditor({
 export function ProjectDetail() {
   const selectedProject = useProjectsStore((s) => s.selectedProject);
   const updateProject = useProjectsStore((s) => s.updateProject);
+  const deleteProject = useProjectsStore((s) => s.deleteProject);
+  const selectProject = useProjectsStore((s) => s.selectProject);
+  const closePanel = useUIStore((s) => s.closePanel);
 
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [memories, setMemories] = useState<MemoryRow[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const priorityTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const selectedProjectId = selectedProject?.id ?? null;
+
+  const priorityFromStore = selectedProject?.priority;
+  const initialPriority = useMemo(
+    () => (priorityFromStore != null ? String(priorityFromStore) : ''),
+    [priorityFromStore],
+  );
+  const [localPriority, setLocalPriority] = useState(initialPriority);
+
+  // Sync local priority when the selected project changes
+  const projectIdForSync = selectedProject?.id;
+  useMemo(() => {
+    setLocalPriority(initialPriority);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectIdForSync]);
+
+  const relatedData = useMemo(() => {
+    if (!selectedProjectId) return null;
+    return { projectId: selectedProjectId };
+  }, [selectedProjectId]);
 
   useEffect(() => {
-    if (!selectedProject) {
-      setSessions([]);
-      setMemories([]);
-      return;
-    }
+    if (!relatedData) return;
 
+    let cancelled = false;
     const fetchRelated = async () => {
       const [sessRes, memRes] = await Promise.all([
         supabase
           .from('agent_sessions')
           .select('*')
-          .eq('project_id', selectedProject.id)
+          .eq('project_id', relatedData.projectId)
           .order('started_at', { ascending: false })
           .limit(5),
         supabase
           .from('memories')
           .select('*')
-          .eq('project_id', selectedProject.id)
+          .eq('project_id', relatedData.projectId)
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
-      setSessions((sessRes.data as SessionRow[] | null) ?? []);
-      setMemories((memRes.data as MemoryRow[] | null) ?? []);
+      if (!cancelled) {
+        setSessions((sessRes.data as SessionRow[] | null) ?? []);
+        setMemories((memRes.data as MemoryRow[] | null) ?? []);
+      }
     };
 
     void fetchRelated();
-  }, [selectedProject]);
+    return () => { cancelled = true; };
+  }, [relatedData]);
 
   const handleSave = useCallback(
     (field: keyof ProjectRow, value: unknown) => {
@@ -245,6 +273,21 @@ export function ProjectDetail() {
     },
     [selectedProject, updateProject],
   );
+
+  const handleStatusChange = useCallback(
+    (newStatus: string) => {
+      if (!selectedProject) return;
+      void updateProject(selectedProject.id, { board_status: newStatus, status: newStatus });
+    },
+    [selectedProject, updateProject],
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (!selectedProject) return;
+    await deleteProject(selectedProject.id);
+    selectProject(null);
+    closePanel();
+  }, [selectedProject, deleteProject, selectProject, closePanel]);
 
   if (!selectedProject) {
     return (
@@ -257,6 +300,7 @@ export function ProjectDetail() {
 
   const p = selectedProject;
   const techStack = p.tech_stack ?? [];
+  const currentStatus = p.board_status ?? p.status;
 
   const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -279,8 +323,8 @@ export function ProjectDetail() {
           <FieldLabel>Status</FieldLabel>
           <div className="relative">
             <select
-              value={p.status}
-              onChange={(e) => handleSave('status', e.target.value)}
+              value={currentStatus}
+              onChange={(e) => handleStatusChange(e.target.value)}
               className="w-full appearance-none bg-transparent border border-border rounded px-2 py-1.5 text-sm text-normal
                 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20 transition-colors cursor-pointer"
             >
@@ -290,7 +334,7 @@ export function ProjectDetail() {
                 </option>
               ))}
             </select>
-            <StatusBadge status={p.status} />
+            <StatusBadge status={currentStatus} />
           </div>
         </div>
         <div>
@@ -299,12 +343,20 @@ export function ProjectDetail() {
             type="number"
             min={0}
             max={5}
-            value={p.priority ?? ''}
+            value={localPriority}
             onChange={(e) => {
-              const val = e.target.value === '' ? null : Number(e.target.value);
+              setLocalPriority(e.target.value);
+              if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
+              priorityTimerRef.current = setTimeout(() => {
+                const val = e.target.value === '' ? null : Number(e.target.value);
+                handleSave('priority', val);
+              }, 600);
+            }}
+            onBlur={() => {
+              if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
+              const val = localPriority === '' ? null : Number(localPriority);
               handleSave('priority', val);
             }}
-            onBlur={() => {}}
             placeholder="0–5"
             className="w-full bg-transparent border border-border rounded px-2 py-1.5 text-sm text-normal
               placeholder:text-low/40 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20
@@ -390,6 +442,35 @@ export function ProjectDetail() {
           <span>Created {formatDate(p.created_at)}</span>
         </div>
         <span>Updated {formatDate(p.updated_at)}</span>
+      </div>
+
+      {/* ── Delete ───────────────────────────────────── */}
+      <div className="pt-3 border-t border-border">
+        {confirmDelete ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-error">Delete this project?</span>
+            <button
+              onClick={() => void handleDelete()}
+              className="px-3 py-1 text-xs bg-error text-white rounded hover:opacity-90 transition-opacity"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="px-3 py-1 text-xs text-low hover:text-normal transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="flex items-center gap-1.5 text-xs text-low hover:text-error transition-colors"
+          >
+            <Trash size={14} />
+            Delete project
+          </button>
+        )}
       </div>
     </div>
   );

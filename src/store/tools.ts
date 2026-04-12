@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { isWithin30Days } from '../lib/dates';
 import type { Database } from '../database.types';
 
 type ToolRow = Database['public']['Tables']['tools']['Row'];
@@ -20,6 +21,7 @@ interface ToolsState {
   updateTool: (id: string, updates: ToolUpdate) => Promise<ToolRow | null>;
   deleteTool: (id: string) => Promise<boolean>;
   selectTool: (id: string | null) => void;
+  clearError: () => void;
   totalMonthlyCost: () => number;
   totalAnnualCost: () => number;
   activeToolCount: () => number;
@@ -30,17 +32,6 @@ let toolsChannel: RealtimeChannel | null = null;
 
 const syncSelectedTool = (state: ToolsState, selectedToolId = state.selectedToolId) =>
   state.tools.find((tool) => tool.id === selectedToolId) ?? null;
-
-const isWithin30Days = (date: string | null): boolean => {
-  if (!date) return false;
-
-  const renewal = new Date(date);
-  const now = new Date();
-  const diffTime = renewal.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays >= 0 && diffDays <= 30;
-};
 
 export const useToolsStore = create<ToolsState>()(
   devtools(
@@ -167,6 +158,8 @@ export const useToolsStore = create<ToolsState>()(
           false,
           'tools/selectTool',
         ),
+
+      clearError: () => set({ error: null }, false, 'tools/clearError'),
 
       totalMonthlyCost: () =>
         get()

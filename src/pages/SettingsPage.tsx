@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useUIStore } from '../store/ui';
+import { supabase } from '../lib/supabase';
 
 function SunIcon() {
   return (
@@ -28,6 +30,21 @@ function DatabaseIcon() {
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useUIStore();
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const { error } = await supabase.from('projects').select('id').limit(1);
+        if (!cancelled) setDbStatus(error ? 'error' : 'connected');
+      } catch {
+        if (!cancelled) setDbStatus('error');
+      }
+    };
+    void check();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="p-6 max-w-2xl">
@@ -35,10 +52,30 @@ export default function SettingsPage() {
 
       <div className="bg-muted rounded-lg p-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-500" />
+          <div
+            className={`w-2 h-2 rounded-full ${
+              dbStatus === 'connected'
+                ? 'bg-green-500'
+                : dbStatus === 'error'
+                  ? 'bg-red-500'
+                  : 'bg-yellow-500 animate-pulse'
+            }`}
+          />
           <div>
-            <div className="text-normal font-medium">Supabase Connected</div>
-            <div className="text-low text-sm">Firmament database is reachable</div>
+            <div className="text-normal font-medium">
+              {dbStatus === 'connected'
+                ? 'Supabase Connected'
+                : dbStatus === 'error'
+                  ? 'Supabase Unreachable'
+                  : 'Checking connection…'}
+            </div>
+            <div className="text-low text-sm">
+              {dbStatus === 'connected'
+                ? 'Firmament database is reachable'
+                : dbStatus === 'error'
+                  ? 'Could not reach the database'
+                  : 'Testing database connectivity'}
+            </div>
           </div>
           <DatabaseIcon aria-hidden="true" />
         </div>

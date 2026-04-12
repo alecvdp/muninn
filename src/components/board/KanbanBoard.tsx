@@ -63,7 +63,6 @@ export function KanbanBoard() {
               key={column.id}
               id={column.id}
               title={column.title}
-              color=""
               projects={columnProjects}
             >
               {columnProjects.map((project, index) => (

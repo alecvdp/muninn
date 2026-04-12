@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useToolsStore } from '../../store/tools';
 import { useUIStore } from '../../store/ui';
-import { X, Check } from '@phosphor-icons/react';
+import { X, Check, Trash } from '@phosphor-icons/react';
 
 const platforms = ['mac', 'linux', 'windows', 'web', 'ios', 'android'];
 
@@ -17,38 +17,52 @@ type ToolFormData = {
   notes: string;
 };
 
+function deriveFormData(tool: { name: string | null; category: string | null; cost: number | null; billing_cycle: string | null; renewal_date: string | null; platform: string[] | null; url: string | null; tags: string[] | null; notes: string | null } | null): ToolFormData {
+  if (!tool) {
+    return {
+      name: '',
+      category: 'to-check-out',
+      cost: 0,
+      billing_cycle: 'monthly',
+      renewal_date: '',
+      platform: [],
+      url: '',
+      tags: [],
+      notes: '',
+    };
+  }
+  return {
+    name: tool.name || '',
+    category: (tool.category as 'using' | 'to-check-out') || 'to-check-out',
+    cost: tool.cost || 0,
+    billing_cycle: (tool.billing_cycle as 'monthly' | 'annual' | 'one-time') || 'monthly',
+    renewal_date: tool.renewal_date || '',
+    platform: tool.platform || [],
+    url: tool.url || '',
+    tags: tool.tags || [],
+    notes: tool.notes || '',
+  };
+}
+
 export function ToolDetail() {
-  const { selectedTool, selectedToolId, updateTool, createTool } = useToolsStore();
-  const { togglePanel } = useUIStore();
+  const { selectedTool, selectedToolId, updateTool, createTool, deleteTool, selectTool } = useToolsStore();
+  const closePanel = useUIStore((s) => s.closePanel);
   const isNew = selectedToolId === 'new';
 
-  const [formData, setFormData] = useState<ToolFormData>({
-    name: '',
-    category: 'to-check-out' as ToolFormData['category'],
-    cost: 0,
-    billing_cycle: 'monthly' as ToolFormData['billing_cycle'],
-    renewal_date: '',
-    platform: [] as ToolFormData['platform'],
-    url: '',
-    tags: [] as ToolFormData['tags'],
-    notes: '',
-  });
+  const initialFormData = useMemo(
+    () => deriveFormData(isNew ? null : selectedTool),
+    [selectedTool, isNew],
+  );
 
-  useEffect(() => {
-    if (selectedTool && !isNew) {
-      setFormData({
-        name: selectedTool.name || '',
-        category: (selectedTool.category as 'using' | 'to-check-out') || 'to-check-out',
-        cost: selectedTool.cost || 0,
-        billing_cycle: (selectedTool.billing_cycle as 'monthly' | 'annual' | 'one-time') || 'monthly',
-        renewal_date: selectedTool.renewal_date || '',
-        platform: selectedTool.platform || [],
-        url: selectedTool.url || '',
-        tags: selectedTool.tags || [],
-        notes: selectedTool.notes || '',
-      });
-    }
-  }, [selectedTool, isNew]);
+  const [formData, setFormData] = useState<ToolFormData>(initialFormData);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Sync form when selected tool changes (use key pattern via useMemo)
+  const toolVersion = selectedTool?.id ?? 'new';
+  useMemo(() => {
+    setFormData(initialFormData);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolVersion]);
 
   const handleSave = async () => {
     if (isNew) {
@@ -56,7 +70,21 @@ export function ToolDetail() {
     } else if (selectedToolId) {
       await updateTool(selectedToolId, formData as Parameters<typeof updateTool>[1]);
     }
-    togglePanel();
+    selectTool(null);
+    closePanel();
+  };
+
+  const handleDelete = async () => {
+    if (selectedToolId && !isNew) {
+      await deleteTool(selectedToolId);
+      selectTool(null);
+      closePanel();
+    }
+  };
+
+  const handleClose = () => {
+    selectTool(null);
+    closePanel();
   };
 
   const togglePlatform = (platform: string) => {
@@ -74,13 +102,13 @@ export function ToolDetail() {
         <h3 className="text-normal font-medium">{isNew ? 'New Tool' : 'Edit Tool'}</h3>
         <div className="flex gap-2">
           <button
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             className="p-2 bg-brand text-white rounded-lg hover:bg-brand-hover"
           >
             <Check size={18} />
           </button>
           <button
-            onClick={togglePanel}
+            onClick={handleClose}
             className="p-2 text-low hover:text-normal hover:bg-elevated rounded-lg"
           >
             <X size={18} />
@@ -195,6 +223,36 @@ export function ToolDetail() {
           placeholder="Notes about this tool..."
         />
       </div>
+
+      {!isNew && (
+        <div className="pt-3 border-t border-border">
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-error">Delete this tool?</span>
+              <button
+                onClick={() => void handleDelete()}
+                className="px-3 py-1 text-xs bg-error text-white rounded hover:opacity-90 transition-opacity"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-3 py-1 text-xs text-low hover:text-normal transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 text-xs text-low hover:text-error transition-colors"
+            >
+              <Trash size={14} />
+              Delete tool
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
