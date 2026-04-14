@@ -16,8 +16,13 @@ export function KanbanBoard() {
 
   const visibleProjects = filteredProjects();
 
-  const getProjectsForColumn = (columnId: string, source = visibleProjects) =>
-    source
+  const getProjectsForColumn = (columnId: string) =>
+    visibleProjects
+      .filter((p) => p.board_status === columnId)
+      .sort((a, b) => (a.board_position || 0) - (b.board_position || 0));
+
+  const getAllProjectsForColumn = (columnId: string) =>
+    projects
       .filter((p) => p.board_status === columnId)
       .sort((a, b) => (a.board_position || 0) - (b.board_position || 0));
 
@@ -30,21 +35,56 @@ export function KanbanBoard() {
       return;
     }
 
-    // Use ALL projects (not filtered) so positions don't collide with hidden items
-    const columnProjects = getProjectsForColumn(destination.droppableId, projects);
+    // destination.index is relative to the rendered (filtered) list, so use
+    // the filtered list to identify the intended neighbor projects.
+    const visibleColumn = getProjectsForColumn(destination.droppableId);
+    // The full unfiltered column is used to find a safe position that doesn't
+    // collide with hidden items between the two visible neighbors.
+    const allColumn = getAllProjectsForColumn(destination.droppableId);
 
     // Fractional positioning: interpolate between siblings for stable reorder
     let newPosition: number;
-    if (columnProjects.length === 0) {
-      newPosition = 1000;
+    if (visibleColumn.length === 0) {
+      // Empty visible column — place after all (including hidden) items
+      if (allColumn.length === 0) {
+        newPosition = 1000;
+      } else {
+        newPosition = (allColumn[allColumn.length - 1]?.board_position || 0) + 1000;
+      }
     } else if (destination.index === 0) {
-      newPosition = (columnProjects[0]?.board_position || 0) - 1000;
-    } else if (destination.index >= columnProjects.length) {
-      newPosition = (columnProjects[columnProjects.length - 1]?.board_position || 0) + 1000;
+      // Before the first visible item — place before all items up to that point
+      const firstVisible = visibleColumn[0];
+      const firstVisibleIdx = allColumn.findIndex((p) => p.id === firstVisible.id);
+      if (firstVisibleIdx <= 0) {
+        newPosition = (firstVisible.board_position || 0) - 1000;
+      } else {
+        const prevHidden = allColumn[firstVisibleIdx - 1];
+        newPosition = ((prevHidden?.board_position || 0) + (firstVisible.board_position || 0)) / 2;
+      }
+    } else if (destination.index >= visibleColumn.length) {
+      // After the last visible item — place after all items in the full list
+      const lastVisible = visibleColumn[visibleColumn.length - 1];
+      const lastVisibleIdx = allColumn.findIndex((p) => p.id === lastVisible.id);
+      if (lastVisibleIdx >= allColumn.length - 1) {
+        newPosition = (lastVisible.board_position || 0) + 1000;
+      } else {
+        const nextHidden = allColumn[lastVisibleIdx + 1];
+        newPosition = ((lastVisible.board_position || 0) + (nextHidden?.board_position || 0)) / 2;
+      }
     } else {
-      const prev = columnProjects[destination.index - 1];
-      const next = columnProjects[destination.index];
-      newPosition = ((prev?.board_position || 0) + (next?.board_position || 0)) / 2;
+      // Between two visible items — find a gap in the full list that avoids hidden items
+      const prev = visibleColumn[destination.index - 1];
+      const next = visibleColumn[destination.index];
+      const prevIdx = allColumn.findIndex((p) => p.id === prev.id);
+      const nextIdx = allColumn.findIndex((p) => p.id === next.id);
+      if (nextIdx - prevIdx === 1) {
+        // Adjacent in full list, simple midpoint
+        newPosition = ((prev?.board_position || 0) + (next?.board_position || 0)) / 2;
+      } else {
+        // Hidden items exist between them; place just after the prev item
+        const afterPrev = allColumn[prevIdx + 1];
+        newPosition = ((prev?.board_position || 0) + (afterPrev?.board_position || 0)) / 2;
+      }
     }
 
     if (source.droppableId !== destination.droppableId) {
