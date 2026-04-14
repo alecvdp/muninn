@@ -15,6 +15,8 @@ interface ProjectsState {
   boardColumns: string[];
   isLoading: boolean;
   error: string | null;
+  searchQuery: string;
+  filterPriority: number | null;
   fetchProjects: () => Promise<void>;
   subscribeToProjects: () => () => void;
   createProject: (project: ProjectInsert) => Promise<ProjectRow | null>;
@@ -24,6 +26,9 @@ interface ProjectsState {
   updateBoardPosition: (id: string, position: number) => Promise<ProjectRow | null>;
   selectProject: (id: string | null) => void;
   clearError: () => void;
+  setSearchQuery: (query: string) => void;
+  setFilterPriority: (priority: number | null) => void;
+  filteredProjects: () => ProjectRow[];
 }
 
 const boardColumns = ['idea', 'todo', 'in-progress', 'paused', 'done'];
@@ -67,6 +72,8 @@ export const useProjectsStore = create<ProjectsState>()(
     boardColumns,
     isLoading: false,
     error: null,
+    searchQuery: '',
+    filterPriority: null,
 
     fetchProjects: async () => {
       set({ isLoading: true, error: null }, false, 'projects/fetchProjects:start');
@@ -201,5 +208,29 @@ export const useProjectsStore = create<ProjectsState>()(
       ),
 
     clearError: () => set({ error: null }, false, 'projects/clearError'),
+
+    setSearchQuery: (query) => set({ searchQuery: query }, false, 'projects/setSearchQuery'),
+
+    setFilterPriority: (priority) => set({ filterPriority: priority }, false, 'projects/setFilterPriority'),
+
+    filteredProjects: () => {
+      const { projects, searchQuery, filterPriority } = get();
+      let filtered = projects;
+
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            (p.description && p.description.toLowerCase().includes(q)),
+        );
+      }
+
+      if (filterPriority !== null) {
+        filtered = filtered.filter((p) => p.priority === filterPriority);
+      }
+
+      return filtered;
+    },
   }), { name: 'projects-store' }),
 );

@@ -15,6 +15,9 @@ interface ToolsState {
   selectedTool: ToolRow | null;
   isLoading: boolean;
   error: string | null;
+  searchQuery: string;
+  filterCategory: string | null;
+  filterPlatform: string | null;
   fetchTools: () => Promise<void>;
   subscribeToTools: () => () => void;
   createTool: (tool: ToolInsert) => Promise<ToolRow | null>;
@@ -22,6 +25,10 @@ interface ToolsState {
   deleteTool: (id: string) => Promise<boolean>;
   selectTool: (id: string | null) => void;
   clearError: () => void;
+  setSearchQuery: (query: string) => void;
+  setFilterCategory: (category: string | null) => void;
+  setFilterPlatform: (platform: string | null) => void;
+  filteredTools: () => ToolRow[];
   totalMonthlyCost: () => number;
   totalAnnualCost: () => number;
   activeToolCount: () => number;
@@ -68,6 +75,9 @@ export const useToolsStore = create<ToolsState>()(
       selectedTool: null,
       isLoading: false,
       error: null,
+      searchQuery: '',
+      filterCategory: null,
+      filterPlatform: null,
 
       fetchTools: async () => {
         set({ isLoading: true, error: null }, false, 'tools/fetchTools:start');
@@ -196,6 +206,32 @@ export const useToolsStore = create<ToolsState>()(
         ),
 
       clearError: () => set({ error: null }, false, 'tools/clearError'),
+
+      setSearchQuery: (query) => set({ searchQuery: query }, false, 'tools/setSearchQuery'),
+
+      setFilterCategory: (category) => set({ filterCategory: category }, false, 'tools/setFilterCategory'),
+
+      setFilterPlatform: (platform) => set({ filterPlatform: platform }, false, 'tools/setFilterPlatform'),
+
+      filteredTools: () => {
+        const { tools, searchQuery, filterCategory, filterPlatform } = get();
+        let filtered = tools;
+
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter((t) => t.name.toLowerCase().includes(q));
+        }
+
+        if (filterCategory) {
+          filtered = filtered.filter((t) => t.category === filterCategory);
+        }
+
+        if (filterPlatform) {
+          filtered = filtered.filter((t) => t.platform?.includes(filterPlatform));
+        }
+
+        return filtered;
+      },
 
       totalMonthlyCost: () =>
         get()

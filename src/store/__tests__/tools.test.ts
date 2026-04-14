@@ -321,6 +321,72 @@ describe('useToolsStore', () => {
     });
   });
 
+  // ── filteredTools ──────────────────────────────────────────────────────────
+
+  describe('filteredTools', () => {
+    const toolA = makeTool({ id: 't1', name: 'Claude Pro', category: 'using', platform: ['web', 'api'] });
+    const toolB = makeTool({ id: 't2', name: 'Cursor', category: 'using', platform: ['desktop'] });
+    const toolC = makeTool({ id: 't3', name: 'Windsurf', category: 'to-check-out', platform: ['desktop', 'web'] });
+
+    beforeEach(() => {
+      useToolsStore.setState({ tools: [toolA, toolB, toolC], searchQuery: '', filterCategory: null, filterPlatform: null });
+    });
+
+    it('returns all tools when no filters are set', () => {
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolA, toolB, toolC]);
+    });
+
+    it('filters by search query matching name', () => {
+      useToolsStore.setState({ searchQuery: 'claude' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolA]);
+    });
+
+    it('search is case-insensitive', () => {
+      useToolsStore.setState({ searchQuery: 'CURSOR' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolB]);
+    });
+
+    it('filters by category', () => {
+      useToolsStore.setState({ filterCategory: 'to-check-out' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolC]);
+    });
+
+    it('filters by platform', () => {
+      useToolsStore.setState({ filterPlatform: 'api' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolA]);
+    });
+
+    it('composes search, category, and platform filters', () => {
+      useToolsStore.setState({ searchQuery: 'wind', filterCategory: 'to-check-out', filterPlatform: 'web' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolC]);
+    });
+
+    it('returns empty array when nothing matches', () => {
+      useToolsStore.setState({ searchQuery: 'nonexistent' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([]);
+    });
+
+    it('returns all tools when filters are null/empty', () => {
+      useToolsStore.setState({ searchQuery: '', filterCategory: null, filterPlatform: null });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolA, toolB, toolC]);
+    });
+
+    it('handles tools with null platform during platform filter', () => {
+      const noPlatform = makeTool({ id: 't4', name: 'NoPlatform', category: 'using', platform: null });
+      useToolsStore.setState({ tools: [toolA, noPlatform], filterPlatform: 'web' });
+      const result = useToolsStore.getState().filteredTools();
+      expect(result).toEqual([toolA]);
+    });
+  });
+
   // ── clearError ─────────────────────────────────────────────────────────────
 
   describe('clearError', () => {
