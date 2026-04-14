@@ -11,9 +11,7 @@ export default function ToolsPage() {
   useEffect(() => {
     void fetchTools();
     const cleanup = subscribeToTools();
-    return () => {
-      void cleanup.then((fn) => fn?.());
-    };
+    return cleanup;
   }, [fetchTools, subscribeToTools]);
 
   return (

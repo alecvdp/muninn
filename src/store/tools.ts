@@ -16,7 +16,7 @@ interface ToolsState {
   isLoading: boolean;
   error: string | null;
   fetchTools: () => Promise<void>;
-  subscribeToTools: () => Promise<() => Promise<void> | void>;
+  subscribeToTools: () => () => void;
   createTool: (tool: ToolInsert) => Promise<ToolRow | null>;
   updateTool: (id: string, updates: ToolUpdate) => Promise<ToolRow | null>;
   deleteTool: (id: string) => Promise<boolean>;
@@ -28,7 +28,34 @@ interface ToolsState {
   renewingWithin30Days: () => number;
 }
 
-let toolsChannel: RealtimeChannel | null = null;
+interface RealtimeSubscriptionState {
+  channel: RealtimeChannel | null;
+  subscriberCount: number;
+}
+
+type RealtimeRegistry = Record<string, RealtimeSubscriptionState>;
+type GlobalRealtimeRegistry = typeof globalThis & {
+  __muninnRealtimeRegistry__?: RealtimeRegistry;
+};
+
+const getRealtimeRegistry = (): RealtimeRegistry => {
+  const globalRef = globalThis as GlobalRealtimeRegistry;
+  if (!globalRef.__muninnRealtimeRegistry__) {
+    globalRef.__muninnRealtimeRegistry__ = {};
+  }
+  return globalRef.__muninnRealtimeRegistry__;
+};
+
+const getToolsSubscriptionState = (): RealtimeSubscriptionState => {
+  const registry = getRealtimeRegistry();
+  if (!registry.tools) {
+    registry.tools = {
+      channel: null,
+      subscriberCount: 0,
+    };
+  }
+  return registry.tools;
+};
 
 const syncSelectedTool = (state: ToolsState, selectedToolId = state.selectedToolId) =>
   state.tools.find((tool) => tool.id === selectedToolId) ?? null;
@@ -65,23 +92,32 @@ export const useToolsStore = create<ToolsState>()(
         );
       },
 
-      subscribeToTools: async () => {
-        if (toolsChannel) {
-          await supabase.removeChannel(toolsChannel);
-          toolsChannel = null;
+      subscribeToTools: () => {
+        const subscription = getToolsSubscriptionState();
+        subscription.subscriberCount += 1;
+
+        if (!subscription.channel) {
+          subscription.channel = supabase
+            .channel('muninn-tools')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'tools' }, () => {
+              void get().fetchTools();
+            })
+            .subscribe();
         }
 
-        toolsChannel = supabase
-          .channel('muninn-tools')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'tools' }, () => {
-            void get().fetchTools();
-          })
-          .subscribe();
+        let hasCleanedUp = false;
+        return () => {
+          if (hasCleanedUp) return;
+          hasCleanedUp = true;
 
-        return async () => {
-          if (!toolsChannel) return;
-          await supabase.removeChannel(toolsChannel);
-          toolsChannel = null;
+          const currentSubscription = getToolsSubscriptionState();
+          currentSubscription.subscriberCount = Math.max(0, currentSubscription.subscriberCount - 1);
+
+          if (currentSubscription.subscriberCount > 0 || !currentSubscription.channel) return;
+
+          const channel = currentSubscription.channel;
+          currentSubscription.channel = null;
+          void supabase.removeChannel(channel);
         };
       },
 

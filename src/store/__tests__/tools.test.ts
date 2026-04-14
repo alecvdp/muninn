@@ -23,6 +23,7 @@ const makeTool = (overrides: Partial<ToolRow> = {}): ToolRow => ({
 
 describe('useToolsStore', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     resetMockResult();
     useToolsStore.setState({
       tools: [],
@@ -335,13 +336,39 @@ describe('useToolsStore', () => {
   // ── subscribeToTools ───────────────────────────────────────────────────────
 
   describe('subscribeToTools', () => {
-    it('sets up a realtime channel and returns unsubscribe function', async () => {
-      const unsubscribe = await useToolsStore.getState().subscribeToTools();
+    it('sets up a realtime channel and returns unsubscribe function', () => {
+      const unsubscribe = useToolsStore.getState().subscribeToTools();
 
       expect(supabaseMock.channel).toHaveBeenCalledWith('muninn-tools');
       expect(supabaseMock.__channelMock.on).toHaveBeenCalled();
       expect(supabaseMock.__channelMock.subscribe).toHaveBeenCalled();
       expect(typeof unsubscribe).toBe('function');
+
+      unsubscribe();
+      expect(supabaseMock.removeChannel).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps one shared channel until all subscribers unsubscribe', () => {
+      const unsubscribeFirst = useToolsStore.getState().subscribeToTools();
+      const unsubscribeSecond = useToolsStore.getState().subscribeToTools();
+
+      expect(supabaseMock.channel).toHaveBeenCalledTimes(1);
+      expect(supabaseMock.__channelMock.subscribe).toHaveBeenCalledTimes(1);
+
+      unsubscribeFirst();
+      expect(supabaseMock.removeChannel).not.toHaveBeenCalled();
+
+      unsubscribeSecond();
+      expect(supabaseMock.removeChannel).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows cleanup to be called more than once safely', () => {
+      const unsubscribe = useToolsStore.getState().subscribeToTools();
+
+      unsubscribe();
+      unsubscribe();
+
+      expect(supabaseMock.removeChannel).toHaveBeenCalledTimes(1);
     });
   });
 });

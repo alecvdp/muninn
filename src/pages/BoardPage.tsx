@@ -11,9 +11,7 @@ export default function BoardPage() {
   useEffect(() => {
     void fetchProjects();
     const cleanup = subscribeToProjects();
-    return () => {
-      void cleanup.then((fn) => fn?.());
-    };
+    return cleanup;
   }, [fetchProjects, subscribeToProjects]);
 
   if (isLoading && projects.length === 0) {
