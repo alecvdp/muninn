@@ -22,11 +22,17 @@ function App() {
 
   return (
     <div className="flex h-screen bg-surface text-normal">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-14 focus:bg-brand focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"
+      >
+        Skip to content
+      </a>
       <AppBar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
         <div className="flex-1 flex overflow-hidden">
-          <main className="flex-1 overflow-auto">
+          <main id="main-content" className="flex-1 overflow-auto">
             <Outlet />
           </main>
           <DetailPanel>

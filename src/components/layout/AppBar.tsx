@@ -31,7 +31,7 @@ export function AppBar() {
   }, [location.pathname, activeView, setView]);
 
   return (
-    <div className="w-12 h-screen bg-muted flex flex-col items-center py-4 border-r border-border">
+    <nav aria-label="Main navigation" className="w-12 h-screen bg-muted flex flex-col items-center py-4 border-r border-border">
       <div className="flex-1 flex flex-col gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -49,6 +49,8 @@ export function AppBar() {
                   : 'text-low hover:text-normal hover:bg-elevated'
               }`}
               title={item.label}
+              aria-label={item.label}
+              aria-current={isActive ? 'page' : undefined}
             >
               <Icon size={20} weight={isActive ? 'fill' : 'regular'} />
             </button>
@@ -56,6 +58,6 @@ export function AppBar() {
         })}
       </div>
       <div className="text-[10px] text-low mt-auto">Muninn</div>
-    </div>
+    </nav>
   );
 }

@@ -69,7 +69,12 @@ export function ToolCard({ tool }: ToolCardProps) {
         {tool.renewal_date && (
           <span className={`text-xs ${isRenewingSoon ? 'text-orange-400' : 'text-low'}`}>
             Renews {new Date(tool.renewal_date).toLocaleDateString()}
-            {isRenewingSoon && ' \u26A0\uFE0F'}
+            {isRenewingSoon && (
+              <>
+                {' '}<span aria-hidden="true">{'\u26A0\uFE0F'}</span>
+                <span className="sr-only"> (renewing soon)</span>
+              </>
+            )}
           </span>
         )}
       </div>
@@ -79,7 +84,7 @@ export function ToolCard({ tool }: ToolCardProps) {
           {tool.platform.map((platform) => {
             const Icon = platformIcons[platform] || Desktop;
             return (
-              <span key={platform} className="text-low" title={platform}>
+              <span key={platform} className="text-low" title={platform} role="img" aria-label={platform}>
                 <Icon size={14} />
               </span>
             );
