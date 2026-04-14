@@ -214,6 +214,7 @@ export function ProjectDetail() {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [memories, setMemories] = useState<MemoryRow[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [priorityError, setPriorityError] = useState('');
   const priorityTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const selectedProjectId = selectedProject?.id ?? null;
@@ -340,23 +341,44 @@ export function ProjectDetail() {
             max={5}
             value={localPriority}
             onChange={(e) => {
-              setLocalPriority(e.target.value);
+              const raw = e.target.value;
+              setLocalPriority(raw);
+              const num = Number(raw);
+              if (raw !== '' && (!Number.isInteger(num) || num < 0 || num > 5)) {
+                setPriorityError('Priority must be 0–5');
+                if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
+                return;
+              }
+              setPriorityError('');
               if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
               priorityTimerRef.current = setTimeout(() => {
-                const val = e.target.value === '' ? null : Number(e.target.value);
+                const val = raw === '' ? null : num;
                 handleSave('priority', val);
               }, 600);
             }}
             onBlur={() => {
               if (priorityTimerRef.current) clearTimeout(priorityTimerRef.current);
-              const val = localPriority === '' ? null : Number(localPriority);
+              const num = Number(localPriority);
+              if (localPriority !== '' && (!Number.isInteger(num) || num < 0 || num > 5)) {
+                setPriorityError('Priority must be 0–5');
+                return;
+              }
+              setPriorityError('');
+              const val = localPriority === '' ? null : num;
               handleSave('priority', val);
             }}
             placeholder="0–5"
-            className="w-full bg-transparent border border-border rounded px-2 py-1.5 text-sm text-normal
-              placeholder:text-low/40 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20
-              transition-colors"
+            aria-invalid={!!priorityError}
+            className={`w-full bg-transparent border rounded px-2 py-1.5 text-sm text-normal
+              placeholder:text-low/40 focus:outline-none focus:ring-1 transition-colors ${
+                priorityError
+                  ? 'border-error focus:border-error focus:ring-error/20'
+                  : 'border-border focus:border-brand/50 focus:ring-brand/20'
+              }`}
           />
+          {priorityError && (
+            <p className="mt-1 text-xs text-error">{priorityError}</p>
+          )}
         </div>
       </div>
 

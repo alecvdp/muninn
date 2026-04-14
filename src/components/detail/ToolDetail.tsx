@@ -57,8 +57,24 @@ export function ToolDetail() {
   const [formData, setFormData] = useState<ToolFormData>(initialFormData);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; url?: string }>({});
+
+  const validate = (): boolean => {
+    const next: { name?: string; url?: string } = {};
+    if (!formData.name.trim()) next.name = 'Tool name is required';
+    if (formData.url.trim()) {
+      try {
+        new URL(formData.url.trim());
+      } catch {
+        next.url = 'Enter a valid URL (e.g. https://example.com)';
+      }
+    }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleSave = async () => {
+    if (!validate()) return;
     setIsSaving(true);
     let result;
     if (isNew) {
@@ -121,15 +137,26 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label htmlFor="tool-name" className="text-low text-xs block mb-1">Name</label>
+        <label htmlFor="tool-name" className="text-low text-xs block mb-1">Name *</label>
         <input
           id="tool-name"
           type="text"
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          onChange={(e) => {
+            setFormData({ ...formData, name: e.target.value });
+            if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+          }}
+          aria-invalid={!!errors.name}
+          className={`w-full bg-muted border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 ${
+            errors.name
+              ? 'border-error focus:ring-error/20'
+              : 'border-border focus:ring-brand'
+          }`}
           placeholder="Tool name"
         />
+        {errors.name && (
+          <p className="mt-1 text-xs text-error">{errors.name}</p>
+        )}
       </div>
 
       <div>
@@ -208,10 +235,21 @@ export function ToolDetail() {
           id="tool-url"
           type="url"
           value={formData.url}
-          onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          onChange={(e) => {
+            setFormData({ ...formData, url: e.target.value });
+            if (errors.url) setErrors((prev) => ({ ...prev, url: undefined }));
+          }}
+          aria-invalid={!!errors.url}
+          className={`w-full bg-muted border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 ${
+            errors.url
+              ? 'border-error focus:ring-error/20'
+              : 'border-border focus:ring-brand'
+          }`}
           placeholder="https://..."
         />
+        {errors.url && (
+          <p className="mt-1 text-xs text-error">{errors.url}</p>
+        )}
       </div>
 
       <div>
