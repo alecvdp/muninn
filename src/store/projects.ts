@@ -2,11 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import type { Database } from '../database.types';
-
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
-type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
-type ProjectUpdate = Database['public']['Tables']['projects']['Update'];
+import type { ProjectRow, ProjectInsert, ProjectUpdate } from '../types';
 
 interface ProjectsState {
   projects: ProjectRow[];

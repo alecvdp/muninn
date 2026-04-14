@@ -1,9 +1,7 @@
 import { Draggable } from '@hello-pangea/dnd';
 import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
-import type { Database } from '../../database.types';
-
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
+import type { ProjectRow } from '../../types';
 
 interface ProjectCardProps {
   project: ProjectRow;

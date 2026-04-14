@@ -1,8 +1,6 @@
 import { Droppable } from '@hello-pangea/dnd';
 import type { ReactNode } from 'react';
-import type { Database } from '../../database.types';
-
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
+import type { ProjectRow } from '../../types';
 
 interface KanbanColumnProps {
   id: string;

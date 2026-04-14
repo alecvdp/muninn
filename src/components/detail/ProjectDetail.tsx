@@ -11,11 +11,7 @@ import {
 import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
 import { supabase } from '../../lib/supabase';
-import type { Database } from '../../database.types';
-
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
-type SessionRow = Database['public']['Tables']['agent_sessions']['Row'];
-type MemoryRow = Database['public']['Tables']['memories']['Row'];
+import type { ProjectRow, SessionRow, MemoryRow } from '../../types';
 
 const STATUS_OPTIONS = ['idea', 'todo', 'in-progress', 'paused', 'done'] as const;
 

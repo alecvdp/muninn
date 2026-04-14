@@ -1,10 +1,8 @@
 import { useNavigate } from 'react-router';
 import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
-import type { Database } from '../../database.types';
+import type { SessionRow } from '../../types';
 import { Desktop, Clock } from '@phosphor-icons/react';
-
-type SessionRow = Database['public']['Tables']['agent_sessions']['Row'];
 
 interface SessionCardProps {
   session: SessionRow;

@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useSessionsStore } from '../sessions';
 import { setMockResult, resetMockResult, supabaseMock } from '../../test/setup';
-import type { Database } from '../../database.types';
-
-type SessionRow = Database['public']['Tables']['agent_sessions']['Row'];
+import type { SessionRow } from '../../types';
 
 const makeSession = (overrides: Partial<SessionRow> = {}): SessionRow => ({
   id: 'sess-1',

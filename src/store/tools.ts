@@ -3,11 +3,7 @@ import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { isWithin30Days } from '../lib/dates';
-import type { Database } from '../database.types';
-
-type ToolRow = Database['public']['Tables']['tools']['Row'];
-type ToolInsert = Database['public']['Tables']['tools']['Insert'];
-type ToolUpdate = Database['public']['Tables']['tools']['Update'];
+import type { ToolRow, ToolInsert, ToolUpdate } from '../types';
 
 interface ToolsState {
   tools: ToolRow[];

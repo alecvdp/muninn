@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProjectsStore } from '../projects';
 import { setMockResult, resetMockResult, supabaseMock } from '../../test/setup';
-import type { Database } from '../../database.types';
-
-type ProjectRow = Database['public']['Tables']['projects']['Row'];
+import type { ProjectRow } from '../../types';
 
 const makeProject = (overrides: Partial<ProjectRow> = {}): ProjectRow => ({
   id: 'proj-1',

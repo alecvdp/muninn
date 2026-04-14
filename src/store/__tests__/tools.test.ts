@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { useToolsStore } from '../tools';
 import { setMockResult, resetMockResult, supabaseMock } from '../../test/setup';
-import type { Database } from '../../database.types';
-
-type ToolRow = Database['public']['Tables']['tools']['Row'];
+import type { ToolRow } from '../../types';
 
 const makeTool = (overrides: Partial<ToolRow> = {}): ToolRow => ({
   id: 'tool-1',
