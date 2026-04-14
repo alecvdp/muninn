@@ -55,10 +55,10 @@ export default function SettingsPage() {
           <div
             className={`w-2 h-2 rounded-full ${
               dbStatus === 'connected'
-                ? 'bg-green-500'
+                ? 'bg-success'
                 : dbStatus === 'error'
-                  ? 'bg-red-500'
-                  : 'bg-yellow-500 animate-pulse'
+                  ? 'bg-error'
+                  : 'bg-warning animate-pulse'
             }`}
           />
           <div>
