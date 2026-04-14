@@ -18,8 +18,6 @@ interface ProjectsState {
   createProject: (project: ProjectInsert) => Promise<ProjectRow | null>;
   updateProject: (id: string, updates: ProjectUpdate) => Promise<ProjectRow | null>;
   deleteProject: (id: string) => Promise<boolean>;
-  updateBoardStatus: (id: string, status: string) => Promise<ProjectRow | null>;
-  updateBoardPosition: (id: string, position: number) => Promise<ProjectRow | null>;
   selectProject: (id: string | null) => void;
   clearError: () => void;
   setSearchQuery: (query: string) => void;
@@ -188,10 +186,6 @@ export const useProjectsStore = create<ProjectsState>()(
 
       return true;
     },
-
-    updateBoardStatus: async (id, status) => get().updateProject(id, { board_status: status }),
-
-    updateBoardPosition: async (id, position) => get().updateProject(id, { board_position: position }),
 
     selectProject: (id) =>
       set(
