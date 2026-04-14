@@ -2,7 +2,7 @@
 
 > A personal project workbench for solo vibe coders. Kanban board for projects, AI tool tracking, agent session history — all backed by Firmament (Supabase). Named for Odin's raven of memory.
 
-![Muninn Screenshot](https://via.placeholder.com/800x450/1a1a1a/ffffff?text=Muninn+Screenshot)
+![Muninn Screenshot](docs/screenshot.png)
 
 ## ✨ Features
 
