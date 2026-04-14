@@ -2,15 +2,14 @@ import { SessionCard } from './SessionCard';
 import { useSessionsStore } from '../../store/sessions';
 
 export function SessionFeed() {
-  const { filteredSessions, isLoading } = useSessionsStore();
-  const sessions = filteredSessions();
+  const { sessions, isLoading, isFetchingMore, hasMore, fetchMoreSessions } = useSessionsStore();
 
   const grouped = sessions.reduce((acc, session) => {
-    const date = session.started_at 
-      ? new Date(session.started_at).toLocaleDateString('en-US', { 
-          weekday: 'short', 
-          month: 'short', 
-          day: 'numeric' 
+    const date = session.started_at
+      ? new Date(session.started_at).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
         })
       : 'Unknown';
     if (!acc[date]) acc[date] = [];
@@ -51,6 +50,18 @@ export function SessionFeed() {
           </div>
         </div>
       ))}
+
+      {hasMore && (
+        <div className="flex justify-center py-4">
+          <button
+            onClick={() => void fetchMoreSessions()}
+            disabled={isFetchingMore}
+            className="px-4 py-2 text-sm rounded-lg border border-border text-low hover:text-normal hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isFetchingMore ? 'Loading...' : 'Load more'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

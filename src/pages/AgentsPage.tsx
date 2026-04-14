@@ -3,14 +3,21 @@ import { SessionFeed } from '../components/agents/SessionFeed';
 import { useSessionsStore } from '../store/sessions';
 
 export default function AgentsPage() {
-  const { fetchSessions, sessions, filterInterface, filterMachine, setFilterInterface, setFilterMachine } = useSessionsStore();
+  const {
+    fetchSessions,
+    fetchFilterOptions,
+    availableInterfaces,
+    availableMachines,
+    filterInterface,
+    filterMachine,
+    setFilterInterface,
+    setFilterMachine,
+  } = useSessionsStore();
 
   useEffect(() => {
     void fetchSessions();
-  }, [fetchSessions]);
-
-  const interfaces: string[] = [...new Set(sessions.map((s) => s.interface).filter((value): value is string => Boolean(value)))];
-  const machines: string[] = [...new Set(sessions.map((s) => s.machine).filter((value): value is string => Boolean(value)))];
+    void fetchFilterOptions();
+  }, [fetchSessions, fetchFilterOptions]);
 
   return (
     <div className="h-full flex flex-col">
@@ -23,7 +30,7 @@ export default function AgentsPage() {
             className="bg-muted border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="">All</option>
-            {interfaces.map((i) => (
+            {availableInterfaces.map((i) => (
               <option key={i} value={i}>{i}</option>
             ))}
           </select>
@@ -36,7 +43,7 @@ export default function AgentsPage() {
             className="bg-muted border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
           >
             <option value="">All</option>
-            {machines.map((m) => (
+            {availableMachines.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
           </select>
