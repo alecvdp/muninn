@@ -12,7 +12,7 @@ export function DetailPanel({ children }: { children?: React.ReactNode }) {
   const closePanel = useUIStore((s) => s.closePanel);
   const selectProject = useProjectsStore((s) => s.selectProject);
   const selectTool = useToolsStore((s) => s.selectTool);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   const handleClose = useCallback(() => {
     closePanel();
