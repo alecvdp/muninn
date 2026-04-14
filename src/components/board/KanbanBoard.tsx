@@ -12,10 +12,12 @@ const columns = [
 ];
 
 export function KanbanBoard() {
-  const { projects, updateBoardStatus, updateBoardPosition, fetchProjects } = useProjectsStore();
+  const { filteredProjects, updateBoardStatus, updateBoardPosition, fetchProjects } = useProjectsStore();
+
+  const visibleProjects = filteredProjects();
 
   const getProjectsForColumn = (columnId: string) =>
-    projects
+    visibleProjects
       .filter((p) => p.board_status === columnId)
       .sort((a, b) => (a.board_position || 0) - (b.board_position || 0));
 

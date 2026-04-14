@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { Plus } from '@phosphor-icons/react';
+import { Plus, MagnifyingGlass } from '@phosphor-icons/react';
 import { KanbanBoard } from '../components/board/KanbanBoard';
 import { useProjectsStore } from '../store/projects';
 import { useUIStore } from '../store/ui';
 
+const priorities = [1, 2, 3, 4, 5];
+
 export default function BoardPage() {
-  const { projects, fetchProjects, subscribeToProjects, isLoading, selectProject } = useProjectsStore();
+  const { projects, fetchProjects, subscribeToProjects, isLoading, selectProject, searchQuery, setSearchQuery, filterPriority, setFilterPriority } = useProjectsStore();
   const openPanel = useUIStore((s) => s.openPanel);
 
   useEffect(() => {
@@ -26,13 +28,38 @@ export default function BoardPage() {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-normal font-medium">Projects</h2>
-        <button
-          onClick={() => { selectProject('new'); openPanel(); }}
-          className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white rounded-lg text-sm hover:bg-brand-hover transition-colors"
-        >
-          <Plus size={16} />
-          New Project
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-low" />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-muted border border-border rounded-lg pl-8 pr-3 py-1 text-xs text-normal placeholder:text-low focus:outline-none focus:ring-1 focus:ring-brand w-48"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-low text-xs">Priority:</label>
+            <select
+              value={filterPriority ?? ''}
+              onChange={(e) => setFilterPriority(e.target.value ? Number(e.target.value) : null)}
+              className="bg-muted border border-border rounded-lg px-3 py-1 text-xs text-normal focus:outline-none focus:ring-1 focus:ring-brand"
+            >
+              <option value="">All</option>
+              {priorities.map((p) => (
+                <option key={p} value={p}>P{p}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={() => { selectProject('new'); openPanel(); }}
+            className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white rounded-lg text-sm hover:bg-brand-hover transition-colors"
+          >
+            <Plus size={16} />
+            New Project
+          </button>
+        </div>
       </div>
 
       {projects.length === 0 ? (
