@@ -20,8 +20,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="tools" element={<ToolsPage />} />
             <Route path="agents" element={<AgentsPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFoundPage />} />
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </ErrorBoundary>
