@@ -99,7 +99,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="text-low text-sm mt-8">
-        <p>Muninn v1.0.0</p>
+        <p>Muninn v{__APP_VERSION__}</p>
         <p className="mt-1">Personal project workbench for solo vibe coding.</p>
       </div>
     </div>
