@@ -1,7 +1,5 @@
 import { ToolCard } from './ToolCard';
-import type { Database } from '../../database.types';
-
-type ToolRow = Database['public']['Tables']['tools']['Row'];
+import type { ToolRow } from '../../types';
 
 interface ToolsGridProps {
   tools: ToolRow[];

@@ -1,7 +1,7 @@
 import { useToolsStore } from '../../store/tools';
 import { useUIStore } from '../../store/ui';
 import { isWithin30Days } from '../../lib/dates';
-import type { Database } from '../../database.types';
+import type { ToolRow } from '../../types';
 import {
   Desktop,
   Globe,
@@ -9,8 +9,6 @@ import {
   AppleLogo,
   LinuxLogo,
 } from '@phosphor-icons/react';
-
-type ToolRow = Database['public']['Tables']['tools']['Row'];
 
 interface ToolCardProps {
   tool: ToolRow;

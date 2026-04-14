@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
-import type { Database } from '../database.types';
-
-type SessionRow = Database['public']['Tables']['agent_sessions']['Row'];
+import type { SessionRow } from '../types';
 
 const PAGE_SIZE = 25;
 

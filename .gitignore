@@ -13,6 +13,9 @@ dist-ssr
 *.local
 .env
 
+# Stray nested repo (leftover from clone / submodule)
+muninn/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
