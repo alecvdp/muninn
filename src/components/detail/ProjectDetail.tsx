@@ -277,9 +277,11 @@ export function ProjectDetail() {
 
   const handleDelete = useCallback(async () => {
     if (!selectedProject) return;
-    await deleteProject(selectedProject.id);
-    selectProject(null);
-    closePanel();
+    const success = await deleteProject(selectedProject.id);
+    if (success) {
+      selectProject(null);
+      closePanel();
+    }
   }, [selectedProject, deleteProject, selectProject, closePanel]);
 
   if (!selectedProject) {
