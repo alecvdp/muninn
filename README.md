@@ -1,386 +1,295 @@
 # Muninn 🐦‍⬛
 
-> A personal project workbench for solo vibe coders. Kanban board for projects, AI tool tracking, agent session history — all backed by Firmament (Supabase). Named for Odin's raven of memory.
+> Personal project workbench for solo vibe coders. Kanban board, AI tool tracking, agent session history — backed by [Firmament](https://github.com/alecvdp/personal-mcp) (Supabase).
 
-![Muninn Screenshot](docs/screenshot.png)
+Named for Odin's raven of memory.
 
-## ✨ Features
+![Muninn Board View](docs/screenshot.png)
 
-### 📋 Board View — Project Kanban
-- **5-column kanban board**: Idea → Todo → In-Progress → Paused → Done
-- **Drag & drop**: Reorder projects within columns and move between status columns
-- **Project cards**: Show name, description, tech stack, priority
-- **Detail panel**: Full project editing with inline fields
-- **Realtime sync**: Changes sync across browser tabs instantly
-- **Cross-references**: See recent agent sessions and memories per project
+## What it does
 
-### 🛠️ Tools View — AI Subscriptions
-- **Cost tracking**: Monitor monthly and annual AI tool expenses
-- **Renewal alerts**: Highlights tools renewing within 30 days
-- **Platform badges**: Visual indicators for mac, linux, web, ios, android
-- **Categories**: "Using" vs "To Check Out" classification
-- **Summary stats**: Total costs, active count, renewal warnings
+Muninn gives you one place to manage your projects, track AI subscriptions, and review what your agents have been doing — across every machine.
 
-### ⚡ Agents View — Session History
-- **Timeline feed**: Chronological agent session history
-- **Date grouping**: Sessions grouped by day
-- **Filterable**: Filter by interface (claude-code, claude.ai, etc.) and machine
-- **Project linking**: Click through to associated projects
-- **Session details**: Duration, memory count, summary
+- **Board** — Kanban board with drag-and-drop, filtering, search, and project archiving
+- **Tools** — AI subscription tracker with cost summaries and renewal alerts
+- **Agents** — Paginated session history with interface/machine filters
+- **Settings** — Connection status, theme toggle, version info
 
-### ⚙️ Settings View
-- **Connection status**: Supabase/Firmament connectivity indicator
-- **Theme toggle**: Dark/light mode switch
-- **Read-only configuration**: View current setup
+All data lives in your Supabase instance (Firmament) with realtime sync across tabs and machines.
 
-## 🏗️ Architecture
+## Tech stack
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Muninn (React + Vite + Tailwind + Zustand + Supabase)     │
-├─────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────────────┐  ┌──────────────────┐  │
-│  │ AppBar   │  │   Main Content   │  │  Detail Panel    │  │
-│  │ (48px)   │  │                  │  │  (resizable)     │  │
-│  │          │  │  • Board         │  │                  │  │
-│  │ 📋 Board │  │  • Tools         │  │  • Project edit  │  │
-│  │ 🤖 Tools │  │  • Agents        │  │  • Tool edit     │  │
-│  │ ⚡ Agents│  │  • Settings      │  │  • Create forms  │  │
-│  │ ⚙️ Settings│  │                  │  │                  │  │
-│  └──────────┘  └──────────────────┘  └──────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Firmament (Supabase) — Your Personal Knowledge Base        │
-├─────────────────────────────────────────────────────────────┤
-│  • projects (kanban status, board_position)                │
-│  • tools (AI subscriptions, costs, renewals)               │
-│  • agent_sessions (session history, summaries)             │
-│  • memories (insights, observations)                       │
-└─────────────────────────────────────────────────────────────┘
-```
+| Layer | Choice |
+|---|---|
+| UI | React 19 + Vite |
+| Styling | Tailwind CSS + HSL CSS variables |
+| State | Zustand (devtools + persist) |
+| Backend | Supabase (`@supabase/supabase-js`) |
+| Drag & drop | `@hello-pangea/dnd` |
+| Panels | `react-resizable-panels` |
+| Icons | `@phosphor-icons/react` |
+| Fonts | IBM Plex Sans + IBM Plex Mono |
+| Router | React Router v7 |
+| Tests | Vitest + Testing Library |
 
-## 🚀 Quick Start
+## Getting started
 
 ### Prerequisites
 
-- **Node.js** 18+ 
-- **npm** or **pnpm**
-- **Supabase account** (for Firmament backend)
+- Node.js 18+
+- A Supabase project (the app uses anon key auth — no login required)
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/muninn.git
-   cd muninn
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables**
-   
-   Copy the example env file and fill in your Supabase credentials:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env`:
-   ```
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key-here
-   ```
-
-4. **Set up database migrations** (in your Firmament/personal-mcp repo)
-   
-   The following migrations need to be applied to your Supabase project:
-   
-   ```sql
-   -- Add board columns to projects table
-   alter table projects
-     add column if not exists board_status text default 'idea',
-     add column if not exists board_position integer default 0;
-   
-   -- Create tools table
-   create table tools (
-     id uuid primary key default gen_random_uuid(),
-     name text not null,
-     category text not null default 'to-check-out',
-     cost numeric(10,2) default 0,
-     billing_cycle text,
-     renewal_date date,
-     platform text[] default '{}',
-     url text,
-     tags text[] default '{}',
-     notes text default '',
-     created_at timestamptz default now(),
-     updated_at timestamptz default now()
-   );
-   
-   -- Enable realtime
-   alter publication supabase_realtime add table projects;
-   ```
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Open in browser**
-   
-   Navigate to `http://localhost:5173`
-
-## 📖 Usage Guide
-
-### Board View — Managing Projects
-
-**Adding a Project:**
-1. Click the "+" button in any column header, or
-2. Click "New Project" in the empty state
-3. Fill in project details in the side panel
-4. Click save — the project appears in the selected column
-
-**Moving Projects:**
-- **Drag & drop** cards between columns to change status
-- **Reorder** within columns by dragging to new positions
-- Changes sync automatically to Supabase
-
-**Editing Projects:**
-1. Click any project card to open the detail panel
-2. Edit fields inline:
-   - **Name**: Click to edit, blur to save
-   - **Status**: Dropdown selector
-   - **Priority**: Number input (0-5)
-   - **Description**: Textarea with auto-save
-   - **Tech Stack**: Comma-separated tags
-3. View related sessions and memories at the bottom
-
-### Tools View — Tracking AI Subscriptions
-
-**Adding a Tool:**
-1. Click "Add Tool" button in the top-right
-2. Fill in the form:
-   - **Name**: Tool name (e.g., "Claude Pro")
-   - **Category**: "Using" (green) or "To Check Out" (gray)
-   - **Cost**: Monthly/annual amount
-   - **Billing Cycle**: monthly, annual, or one-time
-   - **Renewal Date**: For renewal alerts
-   - **Platforms**: Check all that apply
-   - **URL**: Tool website
-   - **Tags**: Categories, use cases
-   - **Notes**: Additional details
-
-**Understanding the Summary Stats:**
-- **Monthly Cost**: Sum of all monthly subscriptions
-- **Annual Cost**: Sum of all annual subscriptions
-- **Active Tools**: Count of tools marked "Using"
-- **Renewing Soon**: Count renewing within 30 days (highlighted in orange)
-
-### Agents View — Reviewing Session History
-
-**Browsing Sessions:**
-- Sessions are grouped by date (Today, Yesterday, specific dates)
-- Each card shows:
-  - **Interface**: claude-code, claude.ai, pi, etc.
-  - **Machine**: Which computer the session ran on
-  - **Duration**: How long the session lasted
-  - **Summary**: AI-generated session summary
-  - **Memory Count**: Number of memories created
-
-**Filtering:**
-- Use the dropdown filters at the top:
-  - **Interface**: Show only sessions from specific interfaces
-  - **Machine**: Filter by computer (mini-ygg, midgard, etc.)
-
-**Project Cross-Linking:**
-- Click "View Project →" on any session with a project to jump to that project in the Board view
-
-### Navigation Tips
-
-**Keyboard Shortcuts:**
-- `Escape`: Close detail panel
-- Navigation via sidebar icons
-
-**Resizable Panels:**
-- Drag the divider between main content and detail panel
-- Panel remembers size between sessions (min: 360px, max: 600px)
-
-**Theme Toggle:**
-- Click the sun/moon icon in the Navbar to switch themes
-- Dark mode is default (easy on the eyes for long coding sessions)
-
-## 🛠️ Development
-
-### Available Scripts
+### Install
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build locally
-npm run lint     # Run ESLint
+git clone https://github.com/alecvdp/muninn.git
+cd muninn
+npm install
 ```
 
-### Project Structure
+### Configure
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your Supabase credentials:
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+### Database setup
+
+Muninn reads from four Firmament tables. If you're starting fresh, apply these migrations to your Supabase project:
+
+**Projects table** (add kanban columns):
+```sql
+alter table projects
+  add column if not exists board_status text default 'idea',
+  add column if not exists board_position integer default 0,
+  add column if not exists archived_at timestamptz;
+```
+
+**Tools table** (new):
+```sql
+create table tools (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  category text not null default 'to-check-out',
+  cost numeric(10,2) default 0,
+  billing_cycle text,
+  renewal_date date,
+  platform text[] default '{}',
+  url text,
+  tags text[] default '{}',
+  notes text default '',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table tools enable row level security;
+create policy "Allow all access" on tools for all using (true) with check (true);
+```
+
+**Enable realtime** (for live sync):
+```sql
+alter publication supabase_realtime add table projects;
+alter publication supabase_realtime add table tools;
+```
+
+The `agent_sessions` and `memories` tables are managed by [personal-mcp](https://github.com/alecvdp/personal-mcp) — Muninn reads from them but doesn't write.
+
+### Run
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:5173`.
+
+## Available scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start dev server (Vite, port 5173) |
+| `npm run build` | Type-check with tsc, then build for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run tests (Vitest, 123 tests) |
+| `npm run test:watch` | Run tests in watch mode |
+
+## Project structure
 
 ```
 muninn/
 ├── src/
 │   ├── components/
-│   │   ├── board/          # Kanban components
-│   │   │   ├── KanbanBoard.tsx
-│   │   │   ├── KanbanColumn.tsx
-│   │   │   └── ProjectCard.tsx
-│   │   ├── tools/          # Tools grid components
-│   │   │   ├── ToolsGrid.tsx
-│   │   │   └── ToolCard.tsx
-│   │   ├── agents/         # Session feed components
-│   │   │   ├── SessionFeed.tsx
-│   │   │   └── SessionCard.tsx
-│   │   ├── detail/         # Detail panel components
-│   │   │   ├── ProjectDetail.tsx
-│   │   │   └── ToolDetail.tsx
-│   │   └── layout/         # App shell components
-│   │       ├── AppBar.tsx
-│   │       ├── Navbar.tsx
-│   │       └── DetailPanel.tsx
-│   ├── pages/              # Route pages
-│   │   ├── BoardPage.tsx
-│   │   ├── ToolsPage.tsx
-│   │   ├── AgentsPage.tsx
-│   │   └── SettingsPage.tsx
-│   ├── store/              # Zustand stores
-│   │   ├── projects.ts
-│   │   ├── tools.ts
-│   │   ├── sessions.ts
-│   │   └── ui.ts
-│   ├── lib/                # Utilities
-│   │   └── supabase.ts
-│   ├── database.types.ts   # Supabase types
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── .env                    # Environment variables
-├── package.json
+│   │   ├── agents/         # SessionFeed, SessionCard
+│   │   ├── board/          # KanbanBoard, KanbanColumn, ProjectCard
+│   │   ├── detail/         # ProjectDetail, ToolDetail, CreateProjectDetail
+│   │   ├── layout/         # AppBar, Navbar, DetailPanel
+│   │   ├── tools/          # ToolsGrid, ToolCard
+│   │   └── ui/             # ErrorBoundary, ErrorToast
+│   ├── lib/
+│   │   ├── supabase.ts     # Typed Supabase client
+│   │   └── dates.ts        # Date utilities (renewal checks)
+│   ├── pages/
+│   │   ├── BoardPage.tsx   # Kanban with search/filter/archive
+│   │   ├── ToolsPage.tsx   # Tool grid with cost summary
+│   │   ├── AgentsPage.tsx  # Session feed with filters
+│   │   ├── SettingsPage.tsx
+│   │   └── NotFoundPage.tsx
+│   ├── store/
+│   │   ├── projects.ts     # Projects CRUD, kanban state, realtime
+│   │   ├── tools.ts        # Tools CRUD, cost calculations, realtime
+│   │   ├── sessions.ts     # Sessions with pagination + server-side filters
+│   │   └── ui.ts           # Panel state, theme (persisted)
+│   ├── types/
+│   │   └── index.ts        # Shared row/insert/update types
+│   ├── database.types.ts   # Generated Supabase schema types
+│   ├── App.tsx             # Layout shell (AppBar + Navbar + Outlet + DetailPanel)
+│   ├── main.tsx            # Router + ErrorBoundary
+│   └── index.css           # CSS variables, dark/light themes
+├── supabase/
+│   └── migrations/         # SQL migrations
+├── docs/
+│   └── screenshot.png
+├── SPEC.md                 # Original design spec
+├── .env.example
+├── vite.config.ts
+├── vitest.config.ts
 ├── tailwind.config.js
-├── tsconfig.json
-└── README.md
+└── package.json
 ```
 
-### Key Technologies
+## Layout
 
-| Technology | Purpose |
-|------------|---------|
-| **React 19** | UI framework |
-| **Vite** | Build tool and dev server |
-| **Tailwind CSS** | Utility-first styling |
-| **Zustand** | State management |
-| **Supabase** | Backend and realtime sync |
-| **@hello-pangea/dnd** | Drag and drop |
-| **react-resizable-panels** | Resizable panels |
-| **Phosphor Icons** | Icon system |
-| **IBM Plex fonts** | Typography |
+```
+┌──────┬─────────────────────────────────────────────┐
+│      │  Navbar  (view title, theme toggle)         │
+│ App  ├──────────────────────┬──────────────────────┤
+│ Bar  │                      │                      │
+│      │  Main Content        │  Detail Panel        │
+│ 48px │  (board / tools /    │  (440px, resizable,  │
+│      │   agents / settings) │   opens on click)    │
+│      │                      │                      │
+└──────┴──────────────────────┴──────────────────────┘
+```
 
-### Customization
+- **AppBar** — Icon rail on the left. Board, Tools, Agents, Settings.
+- **Navbar** — Top bar with view title and theme toggle.
+- **Detail Panel** — Slides in from the right when you click a card. Escape to close. Focus-trapped for accessibility.
 
-**Styling:**
-- Colors are defined as CSS variables in `src/index.css`
-- Uses HSL format for easy theming
-- Dark mode is default; light mode available via toggle
+## Board view
 
-**Adding New Columns:**
-Currently uses fixed 5-column kanban. To modify:
-1. Edit `boardColumns` in `src/store/projects.ts`
-2. Update column colors in `src/components/board/KanbanColumn.tsx`
-3. Add column header in `src/components/board/KanbanBoard.tsx`
+The home view. Projects displayed as cards in kanban columns:
 
-## 🔄 Realtime Sync
+| Column | Status | Color |
+|---|---|---|
+| Idea | `idea` | Blue |
+| Todo | `todo` | Yellow |
+| In Progress | `in-progress` | Orange |
+| Paused | `paused` | Gray |
+| Done | `done` | Green |
 
-Muninn uses Supabase Realtime for instant synchronization:
-- **Projects**: Changes to kanban status or position sync immediately
-- **Tools**: New tools, edits, and deletions sync across tabs
-- **Sessions**: New agent sessions appear automatically
+**Features:**
+- Drag cards between columns to change status
+- Reorder within columns (fractional positioning, handles filtered views)
+- Search by name/description
+- Filter by priority (P1–P5)
+- Toggle archived projects visibility
+- Click any card to edit in the detail panel
+- Create new projects with the + button
 
-This means you can have Muninn open on multiple machines, and changes made on one will instantly appear on the others.
+## Tools view
 
-## 🚢 Deployment
+Track AI subscriptions and tools you're evaluating.
 
-### Static Hosting (Recommended)
+**Summary stats bar** at the top shows:
+- Total monthly cost
+- Total annual cost
+- Active tool count
+- Tools renewing within 30 days (highlighted)
 
-Build the app:
+**Each tool card** shows name, category badge (Using/To Check Out), cost, billing cycle, platform icons, renewal date, and tags.
+
+**Filters:** Search by name, filter by category, filter by platform.
+
+## Agents view
+
+Chronological feed of agent sessions from the `agent_sessions` table.
+
+- Sessions grouped by date
+- Paginated (25 per page, "Load more" button)
+- Filter by interface (claude-code, claude.ai, amp, etc.)
+- Filter by machine (midgard, mini-ygg, etc.)
+- Server-side filtering (queries pushed to Supabase, not client-side)
+
+## Theming
+
+Dark and light themes via CSS variables. Toggle in the navbar or Settings page. Theme preference persists in localStorage.
+
+Colors use HSL format for easy customization — edit `src/index.css` to adjust:
+
+```css
+:root {
+  --brand: 25 82% 54%;      /* Warm orange accent */
+  --bg-surface: 0 0% 13%;   /* Main background */
+  --bg-muted: 0 0% 11%;     /* Sidebar, panels */
+  --text-normal: 0 0% 77%;  /* Body text */
+}
+```
+
+Kanban column colors and tool category badges use semantic CSS variables (`--status-idea`, `--category-using`, etc.) so themes stay consistent.
+
+## Realtime sync
+
+Projects and Tools use Supabase Realtime channels. Changes on one machine appear instantly on others — no refresh needed.
+
+The subscription lifecycle uses a global registry pattern to survive Vite HMR without orphaning channels. Each store tracks subscriber count and only removes the channel when the last consumer unmounts.
+
+## Deployment
+
+Build and deploy as a static site:
+
 ```bash
 npm run build
 ```
 
-Deploy the `dist/` folder to:
-- **Cloudflare Pages**
-- **Vercel**
-- **Netlify**
-- **GitHub Pages**
-- Any static hosting service
+The `dist/` folder can go to Cloudflare Pages, Vercel, Netlify, GitHub Pages, or any static host. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as environment variables in your hosting platform.
 
-### Environment Variables for Production
+## Troubleshooting
 
-Make sure to set these environment variables in your hosting platform:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+**App crashes on load with "Missing Supabase environment variables":**
+You need a `.env` file. Copy `.env.example` to `.env` and fill in your Supabase project URL and anon key.
 
-## 🐛 Troubleshooting
-
-**Build fails with TypeScript errors:**
-```bash
-npm run build
+**Projects don't sync between tabs/machines:**
+Check that the `supabase_realtime` publication includes the `projects` table. Run:
+```sql
+alter publication supabase_realtime add table projects;
 ```
-Check that all dependencies are installed: `npm install`
 
-**Supabase connection errors:**
-- Verify `.env` variables are correct
-- Check that database migrations have been applied
-- Ensure RLS policies allow anonymous access (for tools table)
+**Drag and drop feels janky after many reorders:**
+Fractional positioning can accumulate precision issues over time. A future improvement would normalize positions periodically.
 
-**Realtime not working:**
-- Check browser console for WebSocket errors
-- Verify `supabase_realtime` publication includes `projects` table
-- Some ad blockers block WebSocket connections
+**Build warns about chunk size:**
+The 660KB bundle is primarily `@hello-pangea/dnd` + Supabase client. Code splitting via `React.lazy()` is tracked as a future improvement.
 
-**Drag and drop not working:**
-- Ensure `@hello-pangea/dnd` is installed
-- Check for React version compatibility issues
-- Verify `react StrictMode` is configured correctly
+## Design references
 
-## 📝 Tips for Solo Vibe Coding
+Muninn's visual design and component architecture are heavily inspired by [Vibe Kanban](https://github.com/barvian/vibe-kanban):
+- Three-zone layout (AppBar + main + detail panel)
+- Card styling with border overlap trick
+- HSL color token system
+- IBM Plex typography
+- Phosphor icon set
 
-1. **Keep it lightweight**: Muninn is intentionally minimal — no auth, no complex permissions, just you and your data
-
-2. **Use the board for prioritization**: Drag projects to "In Progress" when actively working, "Paused" when context-switching
-
-3. **Track AI costs**: The Tools view helps you stay aware of monthly AI spending — easy to lose track with multiple subscriptions
-
-4. **Review agent sessions**: Check Agents view weekly to see patterns in your AI-assisted work
-
-5. **Leverage realtime**: Keep Muninn open on your main machine; changes from other devices sync instantly
-
-6. **Project notes**: Use the description field for context — links, decisions, next steps
-
-7. **Tag consistently**: Tech stack tags help you see patterns in what you're building
-
-## 🤝 Integration with Firmament
-
-Muninn is designed to work with your existing Firmament (personal-mcp) setup:
-- Reads from your existing `projects`, `agent_sessions`, and `memories` tables
-- Adds a new `tools` table for AI subscription tracking
-- Uses the same Supabase client configuration
-- Respects your existing data — no migrations that delete data
-
-## 📄 License
-
-MIT — Built for personal use, but feel free to adapt for your own solo workflow.
+Full design spec: [SPEC.md](SPEC.md)
 
 ---
 
 > *"Muninn and Huginn fly each day over the spacious earth. I fear for Huginn, that he come not back, yet more anxious am I for Muninn."* — Odin
 
-Built with ⚡ for solo builders who ship.
+MIT License — Built for solo builders who ship.
