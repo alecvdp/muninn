@@ -7,6 +7,7 @@ const makeTool = (overrides: Partial<ToolRow> = {}): ToolRow => ({
   id: 'tool-1',
   name: 'Claude Pro',
   category: 'using',
+  active_subscription: false,
   billing_cycle: 'monthly',
   cost: 20,
   renewal_date: null,
@@ -231,12 +232,12 @@ describe('useToolsStore', () => {
   // ── Computed selectors ─────────────────────────────────────────────────────
 
   describe('totalMonthlyCost', () => {
-    it('sums cost of monthly-billed tools', () => {
+    it('sums cost of monthly-billed tools with active subscription', () => {
       useToolsStore.setState({
         tools: [
-          makeTool({ id: 't1', billing_cycle: 'monthly', cost: 20 }),
-          makeTool({ id: 't2', billing_cycle: 'monthly', cost: 10 }),
-          makeTool({ id: 't3', billing_cycle: 'annual', cost: 100 }),
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'monthly', cost: 20 }),
+          makeTool({ id: 't2', active_subscription: true, billing_cycle: 'monthly', cost: 10 }),
+          makeTool({ id: 't3', active_subscription: true, billing_cycle: 'annual', cost: 100 }),
         ],
       });
 
@@ -245,7 +246,7 @@ describe('useToolsStore', () => {
 
     it('returns 0 when no monthly tools exist', () => {
       useToolsStore.setState({
-        tools: [makeTool({ billing_cycle: 'annual', cost: 100 })],
+        tools: [makeTool({ active_subscription: true, billing_cycle: 'annual', cost: 100 })],
       });
 
       expect(useToolsStore.getState().totalMonthlyCost()).toBe(0);
@@ -254,8 +255,19 @@ describe('useToolsStore', () => {
     it('skips tools with null cost', () => {
       useToolsStore.setState({
         tools: [
-          makeTool({ id: 't1', billing_cycle: 'monthly', cost: 20 }),
-          makeTool({ id: 't2', billing_cycle: 'monthly', cost: null }),
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'monthly', cost: 20 }),
+          makeTool({ id: 't2', active_subscription: true, billing_cycle: 'monthly', cost: null }),
+        ],
+      });
+
+      expect(useToolsStore.getState().totalMonthlyCost()).toBe(20);
+    });
+
+    it('excludes tools without active subscription', () => {
+      useToolsStore.setState({
+        tools: [
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'monthly', cost: 20 }),
+          makeTool({ id: 't2', active_subscription: false, billing_cycle: 'monthly', cost: 10 }),
         ],
       });
 
@@ -264,16 +276,27 @@ describe('useToolsStore', () => {
   });
 
   describe('totalAnnualCost', () => {
-    it('sums cost of annual-billed tools', () => {
+    it('sums cost of annual-billed tools with active subscription', () => {
       useToolsStore.setState({
         tools: [
-          makeTool({ id: 't1', billing_cycle: 'annual', cost: 100 }),
-          makeTool({ id: 't2', billing_cycle: 'annual', cost: 50 }),
-          makeTool({ id: 't3', billing_cycle: 'monthly', cost: 20 }),
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'annual', cost: 100 }),
+          makeTool({ id: 't2', active_subscription: true, billing_cycle: 'annual', cost: 50 }),
+          makeTool({ id: 't3', active_subscription: true, billing_cycle: 'monthly', cost: 20 }),
         ],
       });
 
       expect(useToolsStore.getState().totalAnnualCost()).toBe(150);
+    });
+
+    it('excludes tools without active subscription', () => {
+      useToolsStore.setState({
+        tools: [
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'annual', cost: 100 }),
+          makeTool({ id: 't2', active_subscription: false, billing_cycle: 'annual', cost: 50 }),
+        ],
+      });
+
+      expect(useToolsStore.getState().totalAnnualCost()).toBe(100);
     });
   });
 
@@ -301,17 +324,18 @@ describe('useToolsStore', () => {
   });
 
   describe('renewingWithin30Days', () => {
-    it('counts tools renewing within 30 days', () => {
+    it('counts tools with active subscription renewing within 30 days', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date('2026-04-13'));
 
       useToolsStore.setState({
         tools: [
-          makeTool({ id: 't1', renewal_date: '2026-04-20' }),   // 7 days away ✓
-          makeTool({ id: 't2', renewal_date: '2026-05-12' }),   // 29 days away ✓
-          makeTool({ id: 't3', renewal_date: '2026-06-01' }),   // 49 days away ✗
-          makeTool({ id: 't4', renewal_date: null }),             // no date ✗
-          makeTool({ id: 't5', renewal_date: '2026-04-01' }),   // past ✗
+          makeTool({ id: 't1', active_subscription: true, renewal_date: '2026-04-20' }),   // 7 days away ✓
+          makeTool({ id: 't2', active_subscription: true, renewal_date: '2026-05-12' }),   // 29 days away ✓
+          makeTool({ id: 't3', active_subscription: true, renewal_date: '2026-06-01' }),   // 49 days away ✗
+          makeTool({ id: 't4', active_subscription: true, renewal_date: null }),             // no date ✗
+          makeTool({ id: 't5', active_subscription: true, renewal_date: '2026-04-01' }),   // past ✗
+          makeTool({ id: 't6', active_subscription: false, renewal_date: '2026-04-20' }),  // no subscription ✗
         ],
       });
 

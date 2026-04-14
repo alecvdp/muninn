@@ -231,17 +231,17 @@ export const useToolsStore = create<ToolsState>()(
 
       totalMonthlyCost: () =>
         get()
-          .tools.filter((tool) => tool.billing_cycle === 'monthly' && tool.cost)
+          .tools.filter((tool) => tool.active_subscription && tool.billing_cycle === 'monthly' && tool.cost)
           .reduce((sum, tool) => sum + (tool.cost ?? 0), 0),
 
       totalAnnualCost: () =>
         get()
-          .tools.filter((tool) => tool.billing_cycle === 'annual' && tool.cost)
+          .tools.filter((tool) => tool.active_subscription && tool.billing_cycle === 'annual' && tool.cost)
           .reduce((sum, tool) => sum + (tool.cost ?? 0), 0),
 
       activeToolCount: () => get().tools.filter((tool) => tool.category === 'using').length,
 
-      renewingWithin30Days: () => get().tools.filter((tool) => isWithin30Days(tool.renewal_date)).length,
+      renewingWithin30Days: () => get().tools.filter((tool) => tool.active_subscription && isWithin30Days(tool.renewal_date)).length,
     }),
     { name: 'tools-store' },
   ),

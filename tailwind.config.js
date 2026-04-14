@@ -24,6 +24,8 @@ export default {
         'status-done': 'hsl(var(--status-done) / <alpha-value>)',
         'category-using': 'hsl(var(--category-using) / <alpha-value>)',
         'category-watching': 'hsl(var(--category-watching) / <alpha-value>)',
+        'category-not-using': 'hsl(var(--category-not-using) / <alpha-value>)',
+        'category-to-check-out': 'hsl(var(--category-to-check-out) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['IBM Plex Sans', 'system-ui', 'sans-serif'],

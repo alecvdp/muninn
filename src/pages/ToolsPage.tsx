@@ -4,7 +4,7 @@ import { ToolsGrid } from '../components/tools/ToolsGrid';
 import { useToolsStore } from '../store/tools';
 import { useUIStore } from '../store/ui';
 
-const categories = ['using', 'to-check-out'];
+const categories = ['using', 'to-check-out', 'not-using', 'watching'];
 
 export default function ToolsPage() {
   const {

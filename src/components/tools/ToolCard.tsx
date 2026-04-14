@@ -31,6 +31,7 @@ export function ToolCard({ tool }: ToolCardProps) {
   const isRenewingSoon = isWithin30Days(tool.renewal_date);
 
   const formatCost = (): string => {
+    if (!tool.active_subscription) return '';
     if (!tool.cost || tool.cost === 0) return 'Free';
     const cycle =
       tool.billing_cycle === 'monthly'
@@ -40,6 +41,24 @@ export function ToolCard({ tool }: ToolCardProps) {
           : '';
     return `$${tool.cost}${cycle}`;
   };
+
+  const categoryBadge = (): { label: string; className: string } => {
+    switch (tool.category) {
+      case 'using':
+        return { label: 'Using', className: 'bg-category-using/20 text-category-using' };
+      case 'to-check-out':
+        return { label: 'To Check Out', className: 'bg-category-to-check-out/20 text-category-to-check-out' };
+      case 'not-using':
+        return { label: 'Not Using', className: 'bg-category-not-using/20 text-category-not-using' };
+      case 'watching':
+        return { label: 'Watching', className: 'bg-category-watching/20 text-category-watching' };
+      default:
+        return { label: tool.category, className: 'bg-category-watching/20 text-category-watching' };
+    }
+  };
+
+  const badge = categoryBadge();
+  const costDisplay = formatCost();
 
   return (
     <div
@@ -53,18 +72,15 @@ export function ToolCard({ tool }: ToolCardProps) {
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-normal font-medium">{tool.name}</h3>
         <span
-          className={`
-            text-xs px-2 py-0.5 rounded-full
-            ${tool.category === 'using' ? 'bg-category-using/20 text-category-using' : 'bg-category-watching/20 text-category-watching'}
-          `}
+          className={`text-xs px-2 py-0.5 rounded-full ${badge.className}`}
         >
-          {tool.category === 'using' ? 'Using' : 'To Check Out'}
+          {badge.label}
         </span>
       </div>
 
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-brand font-medium">{formatCost()}</span>
-        {tool.renewal_date && (
+        {costDisplay && <span className="text-brand font-medium">{costDisplay}</span>}
+        {tool.active_subscription && tool.renewal_date && (
           <span className={`text-xs ${isRenewingSoon ? 'text-warning' : 'text-low'}`}>
             Renews {new Date(tool.renewal_date).toLocaleDateString()}
             {isRenewingSoon && (

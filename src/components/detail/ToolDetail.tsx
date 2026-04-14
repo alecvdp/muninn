@@ -7,7 +7,8 @@ const platforms = ['mac', 'linux', 'windows', 'web', 'ios', 'android'];
 
 type ToolFormData = {
   name: string;
-  category: 'using' | 'to-check-out';
+  category: 'using' | 'to-check-out' | 'not-using' | 'watching';
+  active_subscription: boolean;
   cost: number;
   billing_cycle: 'monthly' | 'annual' | 'one-time';
   renewal_date: string;
@@ -17,11 +18,12 @@ type ToolFormData = {
   notes: string;
 };
 
-function deriveFormData(tool: { name: string | null; category: string | null; cost: number | null; billing_cycle: string | null; renewal_date: string | null; platform: string[] | null; url: string | null; tags: string[] | null; notes: string | null } | null): ToolFormData {
+function deriveFormData(tool: { name: string | null; category: string | null; active_subscription?: boolean | null; cost: number | null; billing_cycle: string | null; renewal_date: string | null; platform: string[] | null; url: string | null; tags: string[] | null; notes: string | null } | null): ToolFormData {
   if (!tool) {
     return {
       name: '',
       category: 'to-check-out',
+      active_subscription: false,
       cost: 0,
       billing_cycle: 'monthly',
       renewal_date: '',
@@ -33,7 +35,8 @@ function deriveFormData(tool: { name: string | null; category: string | null; co
   }
   return {
     name: tool.name || '',
-    category: (tool.category as 'using' | 'to-check-out') || 'to-check-out',
+    category: (tool.category as ToolFormData['category']) || 'to-check-out',
+    active_subscription: tool.active_subscription ?? false,
     cost: tool.cost || 0,
     billing_cycle: (tool.billing_cycle as 'monthly' | 'annual' | 'one-time') || 'monthly',
     renewal_date: tool.renewal_date || '',
@@ -169,10 +172,24 @@ export function ToolDetail() {
         >
           <option value="using">Using</option>
           <option value="to-check-out">To Check Out</option>
+          <option value="not-using">Not Using</option>
+          <option value="watching">Watching</option>
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.active_subscription}
+            onChange={(e) => setFormData({ ...formData, active_subscription: e.target.checked })}
+            className="rounded border-border text-brand focus:ring-brand"
+          />
+          <span className="text-normal text-sm">Active Subscription</span>
+        </label>
+      </div>
+
+      <div className={`grid grid-cols-2 gap-2 ${!formData.active_subscription ? 'opacity-50 cursor-not-allowed' : ''}`}>
         <div>
           <label htmlFor="tool-cost" className="text-low text-xs block mb-1">Cost</label>
           <input
@@ -180,7 +197,8 @@ export function ToolDetail() {
             type="number"
             value={formData.cost}
             onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            disabled={!formData.active_subscription}
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed"
           />
         </div>
         <div>
@@ -189,7 +207,8 @@ export function ToolDetail() {
             id="tool-billing"
             value={formData.billing_cycle}
             onChange={(e) => setFormData({ ...formData, billing_cycle: e.target.value as ToolFormData['billing_cycle'] })}
-            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+            disabled={!formData.active_subscription}
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed"
           >
             <option value="monthly">Monthly</option>
             <option value="annual">Annual</option>
@@ -198,14 +217,15 @@ export function ToolDetail() {
         </div>
       </div>
 
-      <div>
+      <div className={!formData.active_subscription ? 'opacity-50 cursor-not-allowed' : ''}>
         <label htmlFor="tool-renewal-date" className="text-low text-xs block mb-1">Renewal Date</label>
         <input
           id="tool-renewal-date"
           type="date"
           value={formData.renewal_date}
           onChange={(e) => setFormData({ ...formData, renewal_date: e.target.value })}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          disabled={!formData.active_subscription}
+          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed"
         />
       </div>
 
