@@ -49,7 +49,7 @@ export default function ToolsPage() {
         </div>
         <div className="bg-muted rounded-lg p-3">
           <div className="text-low text-xs mb-1">Renewing Soon</div>
-          <div className={`font-medium ${renewingWithin30Days() > 0 ? 'text-orange-400' : 'text-normal'}`}>
+          <div className={`font-medium ${renewingWithin30Days() > 0 ? 'text-warning' : 'text-normal'}`}>
             {renewingWithin30Days()}
           </div>
         </div>

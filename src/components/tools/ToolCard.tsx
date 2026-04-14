@@ -55,7 +55,7 @@ export function ToolCard({ tool }: ToolCardProps) {
         <span
           className={`
             text-xs px-2 py-0.5 rounded-full
-            ${tool.category === 'using' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}
+            ${tool.category === 'using' ? 'bg-category-using/20 text-category-using' : 'bg-category-watching/20 text-category-watching'}
           `}
         >
           {tool.category === 'using' ? 'Using' : 'To Check Out'}
@@ -65,7 +65,7 @@ export function ToolCard({ tool }: ToolCardProps) {
       <div className="flex items-center gap-2 mb-3">
         <span className="text-brand font-medium">{formatCost()}</span>
         {tool.renewal_date && (
-          <span className={`text-xs ${isRenewingSoon ? 'text-orange-400' : 'text-low'}`}>
+          <span className={`text-xs ${isRenewingSoon ? 'text-warning' : 'text-low'}`}>
             Renews {new Date(tool.renewal_date).toLocaleDateString()}
             {isRenewingSoon && (
               <>

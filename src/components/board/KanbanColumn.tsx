@@ -10,11 +10,11 @@ interface KanbanColumnProps {
 }
 
 const columnColors: Record<string, string> = {
-  idea: 'bg-blue-500',
-  todo: 'bg-yellow-500',
-  'in-progress': 'bg-orange-500',
-  paused: 'bg-gray-500',
-  done: 'bg-green-500',
+  idea: 'bg-status-idea',
+  todo: 'bg-status-todo',
+  'in-progress': 'bg-status-in-progress',
+  paused: 'bg-status-paused',
+  done: 'bg-status-done',
 };
 
 export function KanbanColumn({ id, title, projects, children }: KanbanColumnProps) {
