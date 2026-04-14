@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProjectsStore } from '../projects';
 import { setMockResult, resetMockResult, supabaseMock } from '../../test/setup';
 import type { Database } from '../../database.types';
@@ -25,6 +25,7 @@ const makeProject = (overrides: Partial<ProjectRow> = {}): ProjectRow => ({
 
 describe('useProjectsStore', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     resetMockResult();
     useProjectsStore.setState({
       projects: [],
@@ -304,20 +305,39 @@ describe('useProjectsStore', () => {
   // ── subscribeToProjects ────────────────────────────────────────────────────
 
   describe('subscribeToProjects', () => {
-    it('sets up a realtime channel and returns unsubscribe function', async () => {
-      const unsubscribe = await useProjectsStore.getState().subscribeToProjects();
+    it('sets up a realtime channel and returns unsubscribe function', () => {
+      const unsubscribe = useProjectsStore.getState().subscribeToProjects();
 
       expect(supabaseMock.channel).toHaveBeenCalledWith('muninn-projects');
       expect(supabaseMock.__channelMock.on).toHaveBeenCalled();
       expect(supabaseMock.__channelMock.subscribe).toHaveBeenCalled();
       expect(typeof unsubscribe).toBe('function');
+
+      unsubscribe();
+      expect(supabaseMock.removeChannel).toHaveBeenCalledTimes(1);
     });
 
-    it('removes existing channel before creating a new one', async () => {
-      await useProjectsStore.getState().subscribeToProjects();
-      await useProjectsStore.getState().subscribeToProjects();
+    it('keeps one shared channel until the last subscriber unsubscribes', () => {
+      const unsubscribeFirst = useProjectsStore.getState().subscribeToProjects();
+      const unsubscribeSecond = useProjectsStore.getState().subscribeToProjects();
 
-      expect(supabaseMock.removeChannel).toHaveBeenCalled();
+      expect(supabaseMock.channel).toHaveBeenCalledTimes(1);
+      expect(supabaseMock.__channelMock.subscribe).toHaveBeenCalledTimes(1);
+
+      unsubscribeFirst();
+      expect(supabaseMock.removeChannel).not.toHaveBeenCalled();
+
+      unsubscribeSecond();
+      expect(supabaseMock.removeChannel).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows cleanup to be called more than once safely', () => {
+      const unsubscribe = useProjectsStore.getState().subscribeToProjects();
+
+      unsubscribe();
+      unsubscribe();
+
+      expect(supabaseMock.removeChannel).toHaveBeenCalledTimes(1);
     });
   });
 });

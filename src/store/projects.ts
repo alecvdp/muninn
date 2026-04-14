@@ -16,7 +16,7 @@ interface ProjectsState {
   isLoading: boolean;
   error: string | null;
   fetchProjects: () => Promise<void>;
-  subscribeToProjects: () => Promise<() => Promise<void> | void>;
+  subscribeToProjects: () => () => void;
   createProject: (project: ProjectInsert) => Promise<ProjectRow | null>;
   updateProject: (id: string, updates: ProjectUpdate) => Promise<ProjectRow | null>;
   deleteProject: (id: string) => Promise<boolean>;
@@ -27,7 +27,34 @@ interface ProjectsState {
 }
 
 const boardColumns = ['idea', 'todo', 'in-progress', 'paused', 'done'];
-let projectsChannel: RealtimeChannel | null = null;
+interface RealtimeSubscriptionState {
+  channel: RealtimeChannel | null;
+  subscriberCount: number;
+}
+
+type RealtimeRegistry = Record<string, RealtimeSubscriptionState>;
+type GlobalRealtimeRegistry = typeof globalThis & {
+  __muninnRealtimeRegistry__?: RealtimeRegistry;
+};
+
+const getRealtimeRegistry = (): RealtimeRegistry => {
+  const globalRef = globalThis as GlobalRealtimeRegistry;
+  if (!globalRef.__muninnRealtimeRegistry__) {
+    globalRef.__muninnRealtimeRegistry__ = {};
+  }
+  return globalRef.__muninnRealtimeRegistry__;
+};
+
+const getProjectsSubscriptionState = (): RealtimeSubscriptionState => {
+  const registry = getRealtimeRegistry();
+  if (!registry.projects) {
+    registry.projects = {
+      channel: null,
+      subscriberCount: 0,
+    };
+  }
+  return registry.projects;
+};
 
 const syncSelectedProject = (state: ProjectsState, selectedProjectId = state.selectedProjectId) =>
   state.projects.find((project) => project.id === selectedProjectId) ?? null;
@@ -68,23 +95,32 @@ export const useProjectsStore = create<ProjectsState>()(
       );
     },
 
-    subscribeToProjects: async () => {
-      if (projectsChannel) {
-        await supabase.removeChannel(projectsChannel);
-        projectsChannel = null;
+    subscribeToProjects: () => {
+      const subscription = getProjectsSubscriptionState();
+      subscription.subscriberCount += 1;
+
+      if (!subscription.channel) {
+        subscription.channel = supabase
+          .channel('muninn-projects')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
+            void get().fetchProjects();
+          })
+          .subscribe();
       }
 
-      projectsChannel = supabase
-        .channel('muninn-projects')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, () => {
-          void get().fetchProjects();
-        })
-        .subscribe();
+      let hasCleanedUp = false;
+      return () => {
+        if (hasCleanedUp) return;
+        hasCleanedUp = true;
 
-      return async () => {
-        if (!projectsChannel) return;
-        await supabase.removeChannel(projectsChannel);
-        projectsChannel = null;
+        const currentSubscription = getProjectsSubscriptionState();
+        currentSubscription.subscriberCount = Math.max(0, currentSubscription.subscriberCount - 1);
+
+        if (currentSubscription.subscriberCount > 0 || !currentSubscription.channel) return;
+
+        const channel = currentSubscription.channel;
+        currentSubscription.channel = null;
+        void supabase.removeChannel(channel);
       };
     },
 
