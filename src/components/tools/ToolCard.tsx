@@ -85,7 +85,7 @@ export function ToolCard({ tool }: ToolCardProps) {
             const Icon = platformIcons[platform] || Desktop;
             return (
               <span key={platform} className="text-low" title={platform} role="img" aria-label={platform}>
-                <Icon size={14} aria-hidden="true" />
+                <Icon size={14} />
               </span>
             );
           })}
