@@ -12,12 +12,12 @@ const columns = [
 ];
 
 export function KanbanBoard() {
-  const { filteredProjects, updateBoardStatus, updateBoardPosition, fetchProjects } = useProjectsStore();
+  const { projects, filteredProjects, updateBoardStatus, updateBoardPosition, fetchProjects } = useProjectsStore();
 
   const visibleProjects = filteredProjects();
 
-  const getProjectsForColumn = (columnId: string) =>
-    visibleProjects
+  const getProjectsForColumn = (columnId: string, source = visibleProjects) =>
+    source
       .filter((p) => p.board_status === columnId)
       .sort((a, b) => (a.board_position || 0) - (b.board_position || 0));
 
@@ -30,7 +30,8 @@ export function KanbanBoard() {
       return;
     }
 
-    const columnProjects = getProjectsForColumn(destination.droppableId);
+    // Use ALL projects (not filtered) so positions don't collide with hidden items
+    const columnProjects = getProjectsForColumn(destination.droppableId, projects);
 
     // Fractional positioning: interpolate between siblings for stable reorder
     let newPosition: number;

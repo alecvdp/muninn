@@ -110,6 +110,10 @@ export default function ToolsPage() {
         <div className="flex items-center justify-center flex-1">
           <div className="text-low">Loading tools...</div>
         </div>
+      ) : tools.length > 0 && visibleTools.length === 0 ? (
+        <div className="flex items-center justify-center flex-1">
+          <div className="text-low">No matching tools</div>
+        </div>
       ) : (
         <div className="flex-1 overflow-auto">
           <ToolsGrid tools={visibleTools} />

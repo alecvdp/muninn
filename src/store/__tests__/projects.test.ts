@@ -290,6 +290,72 @@ describe('useProjectsStore', () => {
     });
   });
 
+  // ── filteredProjects ───────────────────────────────────────────────────────
+
+  describe('filteredProjects', () => {
+    const projectA = makeProject({ id: 'p1', name: 'Alpha', description: 'First project', priority: 1 });
+    const projectB = makeProject({ id: 'p2', name: 'Beta', description: 'Second project', priority: 2 });
+    const projectC = makeProject({ id: 'p3', name: 'Gamma', description: 'Alpha related', priority: 1 });
+
+    beforeEach(() => {
+      useProjectsStore.setState({ projects: [projectA, projectB, projectC], searchQuery: '', filterPriority: null });
+    });
+
+    it('returns all projects when no filters are set', () => {
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectA, projectB, projectC]);
+    });
+
+    it('filters by search query matching name', () => {
+      useProjectsStore.setState({ searchQuery: 'beta' });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectB]);
+    });
+
+    it('filters by search query matching description', () => {
+      useProjectsStore.setState({ searchQuery: 'second' });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectB]);
+    });
+
+    it('search is case-insensitive', () => {
+      useProjectsStore.setState({ searchQuery: 'BETA' });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectB]);
+    });
+
+    it('filters by priority', () => {
+      useProjectsStore.setState({ filterPriority: 1 });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectA, projectC]);
+    });
+
+    it('composes search and priority filters', () => {
+      useProjectsStore.setState({ searchQuery: 'gamma', filterPriority: 1 });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectC]);
+    });
+
+    it('returns empty array when nothing matches', () => {
+      useProjectsStore.setState({ searchQuery: 'nonexistent' });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([]);
+    });
+
+    it('returns all projects when filterPriority is null', () => {
+      useProjectsStore.setState({ filterPriority: null });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectA, projectB, projectC]);
+    });
+
+    it('skips projects with null description during search', () => {
+      const noDesc = makeProject({ id: 'p4', name: 'Delta', description: null, priority: 3 });
+      useProjectsStore.setState({ projects: [projectA, noDesc], searchQuery: 'first' });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([projectA]);
+    });
+  });
+
   // ── clearError ─────────────────────────────────────────────────────────────
 
   describe('clearError', () => {
