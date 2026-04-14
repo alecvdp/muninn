@@ -26,20 +26,22 @@ export function CreateProjectDetail() {
       .map((t) => t.trim())
       .filter(Boolean);
 
-    const project = await createProject({
-      name: name.trim(),
-      description: description.trim() || null,
-      status,
-      board_status: status,
-      board_position: 0,
-      priority: priority ? Number(priority) : null,
-      tech_stack: tags.length > 0 ? tags : null,
-    });
+    try {
+      const project = await createProject({
+        name: name.trim(),
+        description: description.trim() || null,
+        status,
+        board_status: status,
+        board_position: 0,
+        priority: priority ? Number(priority) : null,
+        tech_stack: tags.length > 0 ? tags : null,
+      });
 
-    setIsSaving(false);
-
-    if (project) {
-      selectProject(project.id);
+      if (project) {
+        selectProject(project.id);
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
