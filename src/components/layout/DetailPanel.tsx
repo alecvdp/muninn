@@ -69,7 +69,7 @@ export function DetailPanel({ children }: { children?: React.ReactNode }) {
     <aside
       ref={panelRef}
       role="dialog"
-      aria-modal="true"
+      aria-modal="false"
       aria-label="Details"
       className="h-full bg-muted border-l border-border flex flex-col w-[440px] min-w-[360px] max-w-[600px]"
     >
