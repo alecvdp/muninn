@@ -56,22 +56,30 @@ export function ToolDetail() {
 
   const [formData, setFormData] = useState<ToolFormData>(initialFormData);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
+    setIsSaving(true);
+    let result;
     if (isNew) {
-      await createTool(formData as Parameters<typeof createTool>[0]);
+      result = await createTool(formData as Parameters<typeof createTool>[0]);
     } else if (selectedToolId) {
-      await updateTool(selectedToolId, formData as Parameters<typeof updateTool>[1]);
+      result = await updateTool(selectedToolId, formData as Parameters<typeof updateTool>[1]);
     }
-    selectTool(null);
-    closePanel();
+    setIsSaving(false);
+    if (result) {
+      selectTool(null);
+      closePanel();
+    }
   };
 
   const handleDelete = async () => {
     if (selectedToolId && !isNew) {
-      await deleteTool(selectedToolId);
-      selectTool(null);
-      closePanel();
+      const success = await deleteTool(selectedToolId);
+      if (success) {
+        selectTool(null);
+        closePanel();
+      }
     }
   };
 
@@ -97,7 +105,8 @@ export function ToolDetail() {
           <button
             onClick={() => void handleSave()}
             aria-label="Save tool"
-            className="p-2 bg-brand text-white rounded-lg hover:bg-brand-hover"
+            disabled={isSaving}
+            className="p-2 bg-brand text-white rounded-lg hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Check size={18} />
           </button>
