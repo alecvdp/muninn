@@ -225,13 +225,6 @@ export function ProjectDetail() {
   );
   const [localPriority, setLocalPriority] = useState(initialPriority);
 
-  // Sync local priority when the selected project changes
-  const projectIdForSync = selectedProject?.id;
-  useMemo(() => {
-    setLocalPriority(initialPriority);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectIdForSync]);
-
   const relatedData = useMemo(() => {
     if (!selectedProjectId) return null;
     return { projectId: selectedProjectId };

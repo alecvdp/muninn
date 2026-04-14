@@ -57,13 +57,6 @@ export function ToolDetail() {
   const [formData, setFormData] = useState<ToolFormData>(initialFormData);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Sync form when selected tool changes (use key pattern via useMemo)
-  const toolVersion = selectedTool?.id ?? 'new';
-  useMemo(() => {
-    setFormData(initialFormData);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toolVersion]);
-
   const handleSave = async () => {
     if (isNew) {
       await createTool(formData as Parameters<typeof createTool>[0]);

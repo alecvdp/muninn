@@ -14,9 +14,9 @@ function App() {
   const selectedProjectId = useProjectsStore((s) => s.selectedProjectId)
 
   const renderDetailContent = () => {
-    if (selectedToolId) return <ToolDetail />
+    if (selectedToolId) return <ToolDetail key={selectedToolId} />
     if (selectedProjectId === 'new') return <CreateProjectDetail />
-    if (selectedProjectId) return <ProjectDetail />
+    if (selectedProjectId) return <ProjectDetail key={selectedProjectId} />
     return null
   }
 
