@@ -5,6 +5,12 @@ import { useUIStore } from '../../store/ui';
 
 const STATUS_OPTIONS = ['idea', 'todo', 'in-progress', 'paused', 'done'] as const;
 
+function isValidPriority(value: string): boolean {
+  if (value === '') return true;
+  const num = Number(value);
+  return Number.isInteger(num) && num >= 0 && num <= 5;
+}
+
 export function CreateProjectDetail() {
   const createProject = useProjectsStore((s) => s.createProject);
   const selectProject = useProjectsStore((s) => s.selectProject);
@@ -16,9 +22,18 @@ export function CreateProjectDetail() {
   const [priority, setPriority] = useState('');
   const [techStack, setTechStack] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<{ name?: string; priority?: string }>({});
+
+  const validate = (): boolean => {
+    const next: { name?: string; priority?: string } = {};
+    if (!name.trim()) next.name = 'Project name is required';
+    if (!isValidPriority(priority)) next.priority = 'Priority must be 0–5';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
   const handleCreate = async () => {
-    if (!name.trim()) return;
+    if (!validate()) return;
     setIsSaving(true);
 
     const tags = techStack
@@ -64,13 +79,23 @@ export function CreateProjectDetail() {
         <input
           id="project-name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+          }}
           placeholder="Project name"
           autoFocus
-          className="w-full bg-transparent border border-border rounded px-2 py-1.5 text-sm text-normal
-            placeholder:text-low/40 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20
-            transition-colors"
+          aria-invalid={!!errors.name}
+          className={`w-full bg-transparent border rounded px-2 py-1.5 text-sm text-normal
+            placeholder:text-low/40 focus:outline-none focus:ring-1 transition-colors ${
+              errors.name
+                ? 'border-error focus:border-error focus:ring-error/20'
+                : 'border-border focus:border-brand/50 focus:ring-brand/20'
+            }`}
         />
+        {errors.name && (
+          <p className="mt-1 text-xs text-error">{errors.name}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -102,12 +127,22 @@ export function CreateProjectDetail() {
             min={0}
             max={5}
             value={priority}
-            onChange={(e) => setPriority(e.target.value)}
+            onChange={(e) => {
+              setPriority(e.target.value);
+              if (errors.priority) setErrors((prev) => ({ ...prev, priority: undefined }));
+            }}
             placeholder="0–5"
-            className="w-full bg-transparent border border-border rounded px-2 py-1.5 text-sm text-normal
-              placeholder:text-low/40 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/20
-              transition-colors"
+            aria-invalid={!!errors.priority}
+            className={`w-full bg-transparent border rounded px-2 py-1.5 text-sm text-normal
+              placeholder:text-low/40 focus:outline-none focus:ring-1 transition-colors ${
+                errors.priority
+                  ? 'border-error focus:border-error focus:ring-error/20'
+                  : 'border-border focus:border-brand/50 focus:ring-brand/20'
+              }`}
           />
+          {errors.priority && (
+            <p className="mt-1 text-xs text-error">{errors.priority}</p>
+          )}
         </div>
       </div>
 
@@ -145,7 +180,7 @@ export function CreateProjectDetail() {
       <div className="flex gap-2 pt-2">
         <button
           onClick={() => void handleCreate()}
-          disabled={!name.trim() || isSaving}
+          disabled={isSaving}
           className="flex-1 px-3 py-2 bg-brand text-white rounded-lg text-sm font-medium
             hover:bg-brand-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
