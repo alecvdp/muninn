@@ -7,6 +7,8 @@ import {
   Tag,
   Lightning,
   Trash,
+  Archive,
+  ArrowCounterClockwise,
 } from '@phosphor-icons/react';
 import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
@@ -204,6 +206,8 @@ export function ProjectDetail() {
   const selectedProject = useProjectsStore((s) => s.selectedProject);
   const updateProject = useProjectsStore((s) => s.updateProject);
   const deleteProject = useProjectsStore((s) => s.deleteProject);
+  const archiveProject = useProjectsStore((s) => s.archiveProject);
+  const unarchiveProject = useProjectsStore((s) => s.unarchiveProject);
   const selectProject = useProjectsStore((s) => s.selectProject);
   const closePanel = useUIStore((s) => s.closePanel);
 
@@ -272,6 +276,18 @@ export function ProjectDetail() {
     [selectedProject, updateProject],
   );
 
+  const handleArchive = useCallback(async () => {
+    if (!selectedProject) return;
+    await archiveProject(selectedProject.id);
+    selectProject(null);
+    closePanel();
+  }, [selectedProject, archiveProject, selectProject, closePanel]);
+
+  const handleUnarchive = useCallback(async () => {
+    if (!selectedProject) return;
+    await unarchiveProject(selectedProject.id);
+  }, [selectedProject, unarchiveProject]);
+
   const handleDelete = useCallback(async () => {
     if (!selectedProject) return;
     const success = await deleteProject(selectedProject.id);
@@ -293,12 +309,30 @@ export function ProjectDetail() {
   const p = selectedProject;
   const techStack = p.tech_stack ?? [];
   const currentStatus = p.board_status ?? p.status;
+  const isArchived = !!p.archived_at;
 
   const formatDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
   return (
     <div className="space-y-5">
+      {/* ── Archived banner ────────────────────────────── */}
+      {isArchived && (
+        <div className="flex items-center justify-between bg-muted border border-border rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-low text-xs">
+            <Archive size={14} />
+            <span>Archived {formatDate(p.archived_at)}</span>
+          </div>
+          <button
+            onClick={() => void handleUnarchive()}
+            className="flex items-center gap-1 text-xs text-brand hover:text-brand-hover transition-colors"
+          >
+            <ArrowCounterClockwise size={12} />
+            Unarchive
+          </button>
+        </div>
+      )}
+
       {/* ── Header ─────────────────────────────────────── */}
       <div>
         <InlineInput
@@ -457,8 +491,17 @@ export function ProjectDetail() {
         <span>Updated {formatDate(p.updated_at)}</span>
       </div>
 
-      {/* ── Delete ───────────────────────────────────── */}
-      <div className="pt-3 border-t border-border">
+      {/* ── Archive / Delete ────────────────────────── */}
+      <div className="pt-3 border-t border-border space-y-3">
+        {!isArchived && (
+          <button
+            onClick={() => void handleArchive()}
+            className="flex items-center gap-1.5 text-xs text-low hover:text-normal transition-colors"
+          >
+            <Archive size={14} />
+            Archive project
+          </button>
+        )}
         {confirmDelete ? (
           <div className="flex items-center gap-2">
             <span className="text-xs text-error">Delete this project?</span>

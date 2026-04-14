@@ -16,6 +16,7 @@ const makeProject = (overrides: Partial<ProjectRow> = {}): ProjectRow => ({
   repo_url: null,
   local_path: null,
   tech_stack: null,
+  archived_at: null,
   created_at: '2026-04-01T00:00:00Z',
   updated_at: '2026-04-01T00:00:00Z',
   ...overrides,
@@ -351,6 +352,78 @@ describe('useProjectsStore', () => {
       useProjectsStore.setState({ projects: [projectA, noDesc], searchQuery: 'first' });
       const result = useProjectsStore.getState().filteredProjects();
       expect(result).toEqual([projectA]);
+    });
+  });
+
+  // ── archiveProject ─────────────────────────────────────────────────────────
+
+  describe('archiveProject', () => {
+    it('sets archived_at on the project', async () => {
+      const project = makeProject({ id: 'proj-1' });
+      useProjectsStore.setState({ projects: [project] });
+
+      const archived = makeProject({ id: 'proj-1', archived_at: '2026-04-15T00:00:00Z' });
+      setMockResult({ data: archived });
+
+      const result = await useProjectsStore.getState().archiveProject('proj-1');
+
+      expect(result).toEqual(archived);
+      expect(useProjectsStore.getState().projects[0].archived_at).toBe('2026-04-15T00:00:00Z');
+    });
+
+    it('returns null on failure', async () => {
+      setMockResult({ data: null, error: { message: 'Archive failed' } });
+
+      const result = await useProjectsStore.getState().archiveProject('proj-1');
+
+      expect(result).toBeNull();
+      expect(useProjectsStore.getState().error).toBe('Archive failed');
+    });
+  });
+
+  // ── unarchiveProject ───────────────────────────────────────────────────────
+
+  describe('unarchiveProject', () => {
+    it('clears archived_at on the project', async () => {
+      const project = makeProject({ id: 'proj-1', archived_at: '2026-04-15T00:00:00Z' });
+      useProjectsStore.setState({ projects: [project] });
+
+      const unarchived = makeProject({ id: 'proj-1', archived_at: null });
+      setMockResult({ data: unarchived });
+
+      const result = await useProjectsStore.getState().unarchiveProject('proj-1');
+
+      expect(result).toEqual(unarchived);
+      expect(useProjectsStore.getState().projects[0].archived_at).toBeNull();
+    });
+  });
+
+  // ── showArchived filter ────────────────────────────────────────────────────
+
+  describe('showArchived', () => {
+    const active = makeProject({ id: 'p1', name: 'Active' });
+    const archived = makeProject({ id: 'p2', name: 'Archived', archived_at: '2026-04-15T00:00:00Z' });
+
+    beforeEach(() => {
+      useProjectsStore.setState({ projects: [active, archived], showArchived: false, searchQuery: '', filterPriority: null });
+    });
+
+    it('filters out archived projects by default', () => {
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([active]);
+    });
+
+    it('includes archived projects when showArchived is true', () => {
+      useProjectsStore.getState().setShowArchived(true);
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([active, archived]);
+    });
+
+    it('composes with search filter', () => {
+      useProjectsStore.getState().setShowArchived(true);
+      useProjectsStore.setState({ searchQuery: 'archived' });
+      const result = useProjectsStore.getState().filteredProjects();
+      expect(result).toEqual([archived]);
     });
   });
 

@@ -1,4 +1,5 @@
 import { Draggable } from '@hello-pangea/dnd';
+import { Archive } from '@phosphor-icons/react';
 import { useProjectsStore } from '../../store/projects';
 import { useUIStore } from '../../store/ui';
 import type { ProjectRow } from '../../types';
@@ -13,6 +14,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
   const selectProject = useProjectsStore((s) => s.selectProject);
   const openPanel = useUIStore((s) => s.openPanel);
   const isSelected = selectedProjectId === project.id;
+  const isArchived = !!project.archived_at;
 
   return (
     <Draggable draggableId={project.id} index={index}>
@@ -28,6 +30,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
             hover:bg-elevated
             ${isSelected ? 'ring-2 ring-brand ring-inset' : ''}
             ${snapshot.isDragging ? 'opacity-50' : ''}
+            ${isArchived ? 'opacity-60' : ''}
           `}
           style={{
             ...provided.draggableProps.style,
@@ -36,9 +39,12 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
             marginRight: '-1px',
           }}
         >
-          <h3 className="text-normal font-medium text-sm mb-1">
-            {project.name}
-          </h3>
+          <div className="flex items-center gap-1.5 mb-1">
+            {isArchived && <Archive size={12} className="text-low shrink-0" />}
+            <h3 className="text-normal font-medium text-sm">
+              {project.name}
+            </h3>
+          </div>
           {project.description && (
             <p className="text-low text-xs line-clamp-2 mb-2">
               {project.description}
