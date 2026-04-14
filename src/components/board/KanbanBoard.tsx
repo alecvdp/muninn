@@ -12,7 +12,7 @@ const columns = [
 ];
 
 export function KanbanBoard() {
-  const { projects, filteredProjects, updateBoardStatus, updateBoardPosition, fetchProjects } = useProjectsStore();
+  const { projects, filteredProjects, updateProject, fetchProjects } = useProjectsStore();
 
   const visibleProjects = filteredProjects();
 
@@ -87,11 +87,14 @@ export function KanbanBoard() {
       }
     }
 
+    const updates: { board_status?: string; board_position: number } = {
+      board_position: Math.round(newPosition),
+    };
     if (source.droppableId !== destination.droppableId) {
-      await updateBoardStatus(draggableId, destination.droppableId);
+      updates.board_status = destination.droppableId;
     }
 
-    await updateBoardPosition(draggableId, Math.round(newPosition));
+    await updateProject(draggableId, updates);
 
     await fetchProjects();
   };

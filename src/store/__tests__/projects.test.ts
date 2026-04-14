@@ -227,32 +227,6 @@ describe('useProjectsStore', () => {
     });
   });
 
-  // ── updateBoardStatus / updateBoardPosition ────────────────────────────────
-
-  describe('updateBoardStatus', () => {
-    it('delegates to updateProject with board_status', async () => {
-      useProjectsStore.setState({ projects: [makeProject({ id: 'proj-1', board_status: 'todo' })] });
-      const updated = makeProject({ id: 'proj-1', board_status: 'in-progress' });
-      setMockResult({ data: updated });
-
-      await useProjectsStore.getState().updateBoardStatus('proj-1', 'in-progress');
-
-      expect(useProjectsStore.getState().projects[0].board_status).toBe('in-progress');
-    });
-  });
-
-  describe('updateBoardPosition', () => {
-    it('delegates to updateProject with board_position', async () => {
-      useProjectsStore.setState({ projects: [makeProject({ id: 'proj-1', board_position: 0 })] });
-      const updated = makeProject({ id: 'proj-1', board_position: 3 });
-      setMockResult({ data: updated });
-
-      await useProjectsStore.getState().updateBoardPosition('proj-1', 3);
-
-      expect(useProjectsStore.getState().projects[0].board_position).toBe(3);
-    });
-  });
-
   // ── selectProject ──────────────────────────────────────────────────────────
 
   describe('selectProject', () => {

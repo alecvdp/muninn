@@ -21,8 +21,6 @@ interface ProjectsState {
   deleteProject: (id: string) => Promise<boolean>;
   archiveProject: (id: string) => Promise<ProjectRow | null>;
   unarchiveProject: (id: string) => Promise<ProjectRow | null>;
-  updateBoardStatus: (id: string, status: string) => Promise<ProjectRow | null>;
-  updateBoardPosition: (id: string, position: number) => Promise<ProjectRow | null>;
   selectProject: (id: string | null) => void;
   clearError: () => void;
   setSearchQuery: (query: string) => void;
@@ -198,9 +196,6 @@ export const useProjectsStore = create<ProjectsState>()(
 
     unarchiveProject: async (id) => get().updateProject(id, { archived_at: null }),
 
-    updateBoardStatus: async (id, status) => get().updateProject(id, { board_status: status }),
-
-    updateBoardPosition: async (id, position) => get().updateProject(id, { board_position: position }),
 
     selectProject: (id) =>
       set(
