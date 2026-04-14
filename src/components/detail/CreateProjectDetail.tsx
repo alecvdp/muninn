@@ -56,10 +56,11 @@ export function CreateProjectDetail() {
       </div>
 
       <div>
-        <label className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
+        <label htmlFor="project-name" className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
           Name
         </label>
         <input
+          id="project-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Project name"
@@ -72,10 +73,11 @@ export function CreateProjectDetail() {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
+          <label htmlFor="project-status" className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
             Status
           </label>
           <select
+            id="project-status"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
             className="w-full appearance-none bg-transparent border border-border rounded px-2 py-1.5 text-sm text-normal
@@ -89,10 +91,11 @@ export function CreateProjectDetail() {
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
+          <label htmlFor="project-priority" className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
             Priority
           </label>
           <input
+            id="project-priority"
             type="number"
             min={0}
             max={5}
@@ -107,10 +110,11 @@ export function CreateProjectDetail() {
       </div>
 
       <div>
-        <label className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
+        <label htmlFor="project-description" className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
           Description
         </label>
         <textarea
+          id="project-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="What is this project about?"
@@ -122,10 +126,11 @@ export function CreateProjectDetail() {
       </div>
 
       <div>
-        <label className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
+        <label htmlFor="project-tech-stack" className="block text-[11px] font-medium text-low uppercase tracking-wider mb-1.5">
           Tech Stack
         </label>
         <input
+          id="project-tech-stack"
           value={techStack}
           onChange={(e) => setTechStack(e.target.value)}
           placeholder="react, typescript, …"

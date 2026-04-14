@@ -96,12 +96,14 @@ export function ToolDetail() {
         <div className="flex gap-2">
           <button
             onClick={() => void handleSave()}
+            aria-label="Save tool"
             className="p-2 bg-brand text-white rounded-lg hover:bg-brand-hover"
           >
             <Check size={18} />
           </button>
           <button
             onClick={handleClose}
+            aria-label="Close panel"
             className="p-2 text-low hover:text-normal hover:bg-elevated rounded-lg"
           >
             <X size={18} />
@@ -110,8 +112,9 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-1">Name</label>
+        <label htmlFor="tool-name" className="text-low text-xs block mb-1">Name</label>
         <input
+          id="tool-name"
           type="text"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -121,8 +124,9 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-1">Category</label>
+        <label htmlFor="tool-category" className="text-low text-xs block mb-1">Category</label>
         <select
+          id="tool-category"
           value={formData.category}
           onChange={(e) => setFormData({ ...formData, category: e.target.value as ToolFormData['category'] })}
           className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
@@ -134,8 +138,9 @@ export function ToolDetail() {
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-low text-xs block mb-1">Cost</label>
+          <label htmlFor="tool-cost" className="text-low text-xs block mb-1">Cost</label>
           <input
+            id="tool-cost"
             type="number"
             value={formData.cost}
             onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
@@ -143,8 +148,9 @@ export function ToolDetail() {
           />
         </div>
         <div>
-          <label className="text-low text-xs block mb-1">Billing</label>
+          <label htmlFor="tool-billing" className="text-low text-xs block mb-1">Billing</label>
           <select
+            id="tool-billing"
             value={formData.billing_cycle}
             onChange={(e) => setFormData({ ...formData, billing_cycle: e.target.value as ToolFormData['billing_cycle'] })}
             className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
@@ -157,8 +163,9 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-1">Renewal Date</label>
+        <label htmlFor="tool-renewal-date" className="text-low text-xs block mb-1">Renewal Date</label>
         <input
+          id="tool-renewal-date"
           type="date"
           value={formData.renewal_date}
           onChange={(e) => setFormData({ ...formData, renewal_date: e.target.value })}
@@ -167,12 +174,13 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-2">Platforms</label>
-        <div className="flex flex-wrap gap-2">
+        <span id="tool-platforms-label" className="text-low text-xs block mb-2">Platforms</span>
+        <div className="flex flex-wrap gap-2" role="group" aria-labelledby="tool-platforms-label">
           {platforms.map((platform) => (
             <button
               key={platform}
               onClick={() => togglePlatform(platform)}
+              aria-pressed={formData.platform.includes(platform)}
               className={`px-3 py-1 rounded-lg text-xs capitalize transition-colors ${
                 formData.platform.includes(platform)
                   ? 'bg-brand text-white'
@@ -186,8 +194,9 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-1">URL</label>
+        <label htmlFor="tool-url" className="text-low text-xs block mb-1">URL</label>
         <input
+          id="tool-url"
           type="url"
           value={formData.url}
           onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -197,8 +206,9 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-1">Tags (comma-separated)</label>
+        <label htmlFor="tool-tags" className="text-low text-xs block mb-1">Tags (comma-separated)</label>
         <input
+          id="tool-tags"
           type="text"
           value={formData.tags.join(', ')}
           onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) })}
@@ -208,8 +218,9 @@ export function ToolDetail() {
       </div>
 
       <div>
-        <label className="text-low text-xs block mb-1">Notes</label>
+        <label htmlFor="tool-notes" className="text-low text-xs block mb-1">Notes</label>
         <textarea
+          id="tool-notes"
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand h-24 resize-none"
