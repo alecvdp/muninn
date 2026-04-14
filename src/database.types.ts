@@ -11,6 +11,7 @@ export interface Database {
     Tables: {
       projects: {
         Row: {
+          archived_at: string | null;
           board_position: number | null;
           board_status: string | null;
           context: string | null;
@@ -27,6 +28,7 @@ export interface Database {
           updated_at: string | null;
         };
         Insert: {
+          archived_at?: string | null;
           board_position?: number | null;
           board_status?: string | null;
           context?: string | null;
@@ -43,6 +45,7 @@ export interface Database {
           updated_at?: string | null;
         };
         Update: {
+          archived_at?: string | null;
           board_position?: number | null;
           board_status?: string | null;
           context?: string | null;
