@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Plus, MagnifyingGlass } from '@phosphor-icons/react';
+import { Plus, MagnifyingGlass, Archive } from '@phosphor-icons/react';
 import { KanbanBoard } from '../components/board/KanbanBoard';
 import { useProjectsStore } from '../store/projects';
 import { useUIStore } from '../store/ui';
@@ -7,7 +7,7 @@ import { useUIStore } from '../store/ui';
 const priorities = [1, 2, 3, 4, 5];
 
 export default function BoardPage() {
-  const { projects, fetchProjects, subscribeToProjects, isLoading, selectProject, searchQuery, setSearchQuery, filterPriority, setFilterPriority } = useProjectsStore();
+  const { projects, fetchProjects, subscribeToProjects, isLoading, selectProject, searchQuery, setSearchQuery, filterPriority, setFilterPriority, showArchived, setShowArchived } = useProjectsStore();
   const openPanel = useUIStore((s) => s.openPanel);
 
   useEffect(() => {
@@ -52,6 +52,18 @@ export default function BoardPage() {
               ))}
             </select>
           </div>
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-xs transition-colors ${
+              showArchived
+                ? 'border-brand text-brand bg-brand/10'
+                : 'border-border text-low hover:text-normal'
+            }`}
+            title={showArchived ? 'Hide archived projects' : 'Show archived projects'}
+          >
+            <Archive size={14} />
+            Archived
+          </button>
           <button
             onClick={() => { selectProject('new'); openPanel(); }}
             className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white rounded-lg text-sm hover:bg-brand-hover transition-colors"

@@ -13,17 +13,21 @@ interface ProjectsState {
   error: string | null;
   searchQuery: string;
   filterPriority: number | null;
+  showArchived: boolean;
   fetchProjects: () => Promise<void>;
   subscribeToProjects: () => () => void;
   createProject: (project: ProjectInsert) => Promise<ProjectRow | null>;
   updateProject: (id: string, updates: ProjectUpdate) => Promise<ProjectRow | null>;
   deleteProject: (id: string) => Promise<boolean>;
+  archiveProject: (id: string) => Promise<ProjectRow | null>;
+  unarchiveProject: (id: string) => Promise<ProjectRow | null>;
   updateBoardStatus: (id: string, status: string) => Promise<ProjectRow | null>;
   updateBoardPosition: (id: string, position: number) => Promise<ProjectRow | null>;
   selectProject: (id: string | null) => void;
   clearError: () => void;
   setSearchQuery: (query: string) => void;
   setFilterPriority: (priority: number | null) => void;
+  setShowArchived: (show: boolean) => void;
   filteredProjects: () => ProjectRow[];
 }
 
@@ -70,6 +74,7 @@ export const useProjectsStore = create<ProjectsState>()(
     error: null,
     searchQuery: '',
     filterPriority: null,
+    showArchived: false,
 
     fetchProjects: async () => {
       set({ isLoading: true, error: null }, false, 'projects/fetchProjects:start');
@@ -189,6 +194,10 @@ export const useProjectsStore = create<ProjectsState>()(
       return true;
     },
 
+    archiveProject: async (id) => get().updateProject(id, { archived_at: new Date().toISOString() }),
+
+    unarchiveProject: async (id) => get().updateProject(id, { archived_at: null }),
+
     updateBoardStatus: async (id, status) => get().updateProject(id, { board_status: status }),
 
     updateBoardPosition: async (id, position) => get().updateProject(id, { board_position: position }),
@@ -209,9 +218,15 @@ export const useProjectsStore = create<ProjectsState>()(
 
     setFilterPriority: (priority) => set({ filterPriority: priority }, false, 'projects/setFilterPriority'),
 
+    setShowArchived: (show) => set({ showArchived: show }, false, 'projects/setShowArchived'),
+
     filteredProjects: () => {
-      const { projects, searchQuery, filterPriority } = get();
+      const { projects, searchQuery, filterPriority, showArchived } = get();
       let filtered = projects;
+
+      if (!showArchived) {
+        filtered = filtered.filter((p) => !p.archived_at);
+      }
 
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
