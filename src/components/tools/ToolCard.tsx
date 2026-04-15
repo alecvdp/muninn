@@ -1,6 +1,6 @@
 import { useToolsStore } from '../../store/tools';
 import { useUIStore } from '../../store/ui';
-import { isWithin30Days } from '../../lib/dates';
+import { isWithin30Days, nextRenewalDate } from '../../lib/dates';
 import type { ToolRow } from '../../types';
 import {
   Desktop,
@@ -28,7 +28,8 @@ export function ToolCard({ tool }: ToolCardProps) {
   const selectTool = useToolsStore((s) => s.selectTool);
   const openPanel = useUIStore((s) => s.openPanel);
   const isSelected = selectedToolId === tool.id;
-  const isRenewingSoon = isWithin30Days(tool.renewal_date);
+  const nextRenewal = nextRenewalDate(tool);
+  const isRenewingSoon = isWithin30Days(nextRenewal);
 
   const formatCost = (): string => {
     if (!tool.active_subscription) return '';
@@ -80,9 +81,9 @@ export function ToolCard({ tool }: ToolCardProps) {
 
       <div className="flex items-center gap-2 mb-3">
         {costDisplay && <span className="text-brand font-medium">{costDisplay}</span>}
-        {tool.active_subscription && tool.renewal_date && (
+        {tool.active_subscription && nextRenewal && (
           <span className={`text-xs ${isRenewingSoon ? 'text-warning' : 'text-low'}`}>
-            Renews {new Date(tool.renewal_date).toLocaleDateString()}
+            Renews {nextRenewal.toLocaleDateString()}
             {isRenewingSoon && (
               <>
                 {' '}<span aria-hidden="true">{'\u26A0\uFE0F'}</span>

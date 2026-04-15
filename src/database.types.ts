@@ -66,6 +66,7 @@ export interface Database {
       tools: {
         Row: {
           active_subscription: boolean | null;
+          bill_day: number | null;
           billing_cycle: string | null;
           category: string;
           cost: number | null;
@@ -81,6 +82,7 @@ export interface Database {
         };
         Insert: {
           active_subscription?: boolean | null;
+          bill_day?: number | null;
           billing_cycle?: string | null;
           category?: string;
           cost?: number | null;
@@ -96,6 +98,7 @@ export interface Database {
         };
         Update: {
           active_subscription?: boolean | null;
+          bill_day?: number | null;
           billing_cycle?: string | null;
           category?: string;
           cost?: number | null;

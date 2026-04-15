@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { isWithin30Days } from '../lib/dates';
+import { isWithin30Days, nextRenewalDate } from '../lib/dates';
 import type { ToolRow, ToolInsert, ToolUpdate } from '../types';
 
 interface ToolsState {
@@ -241,7 +241,7 @@ export const useToolsStore = create<ToolsState>()(
 
       activeToolCount: () => get().tools.filter((tool) => tool.category === 'using').length,
 
-      renewingWithin30Days: () => get().tools.filter((tool) => tool.active_subscription && isWithin30Days(tool.renewal_date)).length,
+      renewingWithin30Days: () => get().tools.filter((tool) => tool.active_subscription && isWithin30Days(nextRenewalDate(tool))).length,
     }),
     { name: 'tools-store' },
   ),

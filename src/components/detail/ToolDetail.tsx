@@ -11,6 +11,7 @@ type ToolFormData = {
   active_subscription: boolean;
   cost: number;
   billing_cycle: 'monthly' | 'annual' | 'one-time';
+  bill_day: number | null;
   renewal_date: string;
   platform: string[];
   url: string;
@@ -18,7 +19,7 @@ type ToolFormData = {
   notes: string;
 };
 
-function deriveFormData(tool: { name: string | null; category: string | null; active_subscription?: boolean | null; cost: number | null; billing_cycle: string | null; renewal_date: string | null; platform: string[] | null; url: string | null; tags: string[] | null; notes: string | null } | null): ToolFormData {
+function deriveFormData(tool: { name: string | null; category: string | null; active_subscription?: boolean | null; cost: number | null; billing_cycle: string | null; bill_day?: number | null; renewal_date: string | null; platform: string[] | null; url: string | null; tags: string[] | null; notes: string | null } | null): ToolFormData {
   if (!tool) {
     return {
       name: '',
@@ -26,6 +27,7 @@ function deriveFormData(tool: { name: string | null; category: string | null; ac
       active_subscription: false,
       cost: 0,
       billing_cycle: 'monthly',
+      bill_day: null,
       renewal_date: '',
       platform: [],
       url: '',
@@ -39,6 +41,7 @@ function deriveFormData(tool: { name: string | null; category: string | null; ac
     active_subscription: tool.active_subscription ?? false,
     cost: tool.cost || 0,
     billing_cycle: (tool.billing_cycle as 'monthly' | 'annual' | 'one-time') || 'monthly',
+    bill_day: tool.bill_day ?? null,
     renewal_date: tool.renewal_date || '',
     platform: tool.platform || [],
     url: tool.url || '',
@@ -82,6 +85,7 @@ export function ToolDetail() {
     const payload = {
       ...formData,
       renewal_date: formData.renewal_date || null,
+      bill_day: formData.bill_day || null,
     };
     let result;
     if (isNew) {
@@ -221,17 +225,38 @@ export function ToolDetail() {
         </div>
       </div>
 
-      <div className={!formData.active_subscription ? 'opacity-50 cursor-not-allowed' : ''}>
-        <label htmlFor="tool-renewal-date" className="text-low text-xs block mb-1">Renewal Date</label>
-        <input
-          id="tool-renewal-date"
-          type="date"
-          value={formData.renewal_date}
-          onChange={(e) => setFormData({ ...formData, renewal_date: e.target.value })}
-          disabled={!formData.active_subscription}
-          className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed"
-        />
-      </div>
+      {formData.billing_cycle === 'monthly' ? (
+        <div className={!formData.active_subscription ? 'opacity-50 cursor-not-allowed' : ''}>
+          <label htmlFor="tool-bill-day" className="text-low text-xs block mb-1">Bill Day (1–31)</label>
+          <input
+            id="tool-bill-day"
+            type="number"
+            min={1}
+            max={31}
+            value={formData.bill_day ?? ''}
+            onChange={(e) => {
+              const val = e.target.value === '' ? null : Math.min(31, Math.max(1, parseInt(e.target.value, 10)));
+              setFormData({ ...formData, bill_day: val });
+            }}
+            disabled={!formData.active_subscription}
+            placeholder="e.g. 17"
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed"
+          />
+          <p className="mt-1 text-[11px] text-low">Renewal auto-advances each month</p>
+        </div>
+      ) : (
+        <div className={!formData.active_subscription ? 'opacity-50 cursor-not-allowed' : ''}>
+          <label htmlFor="tool-renewal-date" className="text-low text-xs block mb-1">Renewal Date</label>
+          <input
+            id="tool-renewal-date"
+            type="date"
+            value={formData.renewal_date}
+            onChange={(e) => setFormData({ ...formData, renewal_date: e.target.value })}
+            disabled={!formData.active_subscription}
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed"
+          />
+        </div>
+      )}
 
       <div>
         <span id="tool-platforms-label" className="text-low text-xs block mb-2">Platforms</span>

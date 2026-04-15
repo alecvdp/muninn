@@ -8,6 +8,7 @@ const makeTool = (overrides: Partial<ToolRow> = {}): ToolRow => ({
   name: 'Claude Pro',
   category: 'using',
   active_subscription: false,
+  bill_day: null,
   billing_cycle: 'monthly',
   cost: 20,
   renewal_date: null,
@@ -330,12 +331,27 @@ describe('useToolsStore', () => {
 
       useToolsStore.setState({
         tools: [
-          makeTool({ id: 't1', active_subscription: true, renewal_date: '2026-04-20' }),   // 7 days away ✓
-          makeTool({ id: 't2', active_subscription: true, renewal_date: '2026-05-12' }),   // 29 days away ✓
-          makeTool({ id: 't3', active_subscription: true, renewal_date: '2026-06-01' }),   // 49 days away ✗
-          makeTool({ id: 't4', active_subscription: true, renewal_date: null }),             // no date ✗
-          makeTool({ id: 't5', active_subscription: true, renewal_date: '2026-04-01' }),   // past ✗
-          makeTool({ id: 't6', active_subscription: false, renewal_date: '2026-04-20' }),  // no subscription ✗
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'annual', renewal_date: '2026-04-20' }),   // 7 days away ✓
+          makeTool({ id: 't2', active_subscription: true, billing_cycle: 'annual', renewal_date: '2026-05-12' }),   // 29 days away ✓
+          makeTool({ id: 't3', active_subscription: true, billing_cycle: 'annual', renewal_date: '2026-06-01' }),   // 49 days away ✗
+          makeTool({ id: 't4', active_subscription: true, billing_cycle: 'annual', renewal_date: null }),             // no date ✗
+          makeTool({ id: 't5', active_subscription: true, billing_cycle: 'annual', renewal_date: '2026-04-01' }),   // past ✗
+          makeTool({ id: 't6', active_subscription: false, billing_cycle: 'annual', renewal_date: '2026-04-20' }),  // no subscription ✗
+        ],
+      });
+
+      expect(useToolsStore.getState().renewingWithin30Days()).toBe(2);
+    });
+
+    it('uses bill_day for monthly tools to compute next renewal', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-13'));
+
+      useToolsStore.setState({
+        tools: [
+          makeTool({ id: 't1', active_subscription: true, billing_cycle: 'monthly', bill_day: 17 }),  // Apr 17 = 4 days away ✓
+          makeTool({ id: 't2', active_subscription: true, billing_cycle: 'monthly', bill_day: 5 }),   // May 5 = 22 days away ✓
+          makeTool({ id: 't3', active_subscription: true, billing_cycle: 'monthly', bill_day: null }), // no bill day ✗
         ],
       });
 
