@@ -436,7 +436,7 @@ export function ProjectDetail() {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <FieldLabel>Repo URL</FieldLabel>
-          {p.repo_url ? (
+          {p.repo_url && /^https?:\/\//i.test(p.repo_url) ? (
             <a
               href={p.repo_url}
               target="_blank"
@@ -446,6 +446,8 @@ export function ProjectDetail() {
               <LinkSimple size={14} />
               <span className="truncate">{p.repo_url.replace(/^https?:\/\//, '')}</span>
             </a>
+          ) : p.repo_url ? (
+            <span className="text-xs text-low font-mono">{p.repo_url}</span>
           ) : (
             <span className="text-xs text-low">—</span>
           )}

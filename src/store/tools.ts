@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { userFacingError } from '../lib/errors';
 import { isWithin30Days, nextRenewalDate } from '../lib/dates';
 import type { ToolRow, ToolInsert, ToolUpdate } from '../types';
 
@@ -81,7 +82,7 @@ export const useToolsStore = create<ToolsState>()(
         const { data, error } = await supabase.from('tools').select('*').order('name');
 
         if (error) {
-          set({ isLoading: false, error: error.message }, false, 'tools/fetchTools:error');
+          set({ isLoading: false, error: userFacingError(error.message) }, false, 'tools/fetchTools:error');
           return;
         }
 
@@ -131,7 +132,7 @@ export const useToolsStore = create<ToolsState>()(
         const { data, error } = await supabase.from('tools').insert(tool).select('*').single();
 
         if (error) {
-          set({ error: error.message }, false, 'tools/createTool:error');
+          set({ error: userFacingError(error.message) }, false, 'tools/createTool:error');
           return null;
         }
 
@@ -151,7 +152,7 @@ export const useToolsStore = create<ToolsState>()(
         const { data, error } = await supabase.from('tools').update(updates).eq('id', id).select('*').single();
 
         if (error) {
-          set({ error: error.message }, false, 'tools/updateTool:error');
+          set({ error: userFacingError(error.message) }, false, 'tools/updateTool:error');
           return null;
         }
 
@@ -172,7 +173,7 @@ export const useToolsStore = create<ToolsState>()(
         const { error } = await supabase.from('tools').delete().eq('id', id);
 
         if (error) {
-          set({ error: error.message }, false, 'tools/deleteTool:error');
+          set({ error: userFacingError(error.message) }, false, 'tools/deleteTool:error');
           return false;
         }
 
@@ -243,6 +244,6 @@ export const useToolsStore = create<ToolsState>()(
 
       renewingWithin30Days: () => get().tools.filter((tool) => tool.active_subscription && isWithin30Days(nextRenewalDate(tool))).length,
     }),
-    { name: 'tools-store' },
+    { name: 'tools-store', enabled: import.meta.env.DEV },
   ),
 );
