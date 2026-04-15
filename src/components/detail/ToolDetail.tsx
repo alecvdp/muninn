@@ -79,11 +79,15 @@ export function ToolDetail() {
   const handleSave = async () => {
     if (!validate()) return;
     setIsSaving(true);
+    const payload = {
+      ...formData,
+      renewal_date: formData.renewal_date || null,
+    };
     let result;
     if (isNew) {
-      result = await createTool(formData as Parameters<typeof createTool>[0]);
+      result = await createTool(payload as Parameters<typeof createTool>[0]);
     } else if (selectedToolId) {
-      result = await updateTool(selectedToolId, formData as Parameters<typeof updateTool>[1]);
+      result = await updateTool(selectedToolId, payload as Parameters<typeof updateTool>[1]);
     }
     setIsSaving(false);
     if (result) {
