@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { SessionRow } from '../types';
 
@@ -19,11 +20,41 @@ interface SessionsState {
   fetchSessions: () => Promise<void>;
   fetchMoreSessions: () => Promise<void>;
   fetchFilterOptions: () => Promise<void>;
+  subscribeToSessions: () => () => void;
   clearError: () => void;
   setFilterInterface: (filter: string | null) => void;
   setFilterMachine: (filter: string | null) => void;
   setFilterProject: (filter: string | null) => void;
 }
+
+interface RealtimeSubscriptionState {
+  channel: RealtimeChannel | null;
+  subscriberCount: number;
+}
+
+type RealtimeRegistry = Record<string, RealtimeSubscriptionState>;
+type GlobalRealtimeRegistry = typeof globalThis & {
+  __muninnRealtimeRegistry__?: RealtimeRegistry;
+};
+
+const getRealtimeRegistry = (): RealtimeRegistry => {
+  const globalRef = globalThis as GlobalRealtimeRegistry;
+  if (!globalRef.__muninnRealtimeRegistry__) {
+    globalRef.__muninnRealtimeRegistry__ = {};
+  }
+  return globalRef.__muninnRealtimeRegistry__;
+};
+
+const getSessionsSubscriptionState = (): RealtimeSubscriptionState => {
+  const registry = getRealtimeRegistry();
+  if (!registry.sessions) {
+    registry.sessions = {
+      channel: null,
+      subscriberCount: 0,
+    };
+  }
+  return registry.sessions;
+};
 
 export const useSessionsStore = create<SessionsState>()(
   devtools((set, get) => ({
@@ -100,6 +131,36 @@ export const useSessionsStore = create<SessionsState>()(
         else if (row.kind === 'machine') machines.push(row.value);
       }
       set({ availableInterfaces: interfaces.sort(), availableMachines: machines.sort() }, false, 'sessions/filterOptions');
+    },
+
+    subscribeToSessions: () => {
+      const subscription = getSessionsSubscriptionState();
+      subscription.subscriberCount += 1;
+
+      if (!subscription.channel) {
+        subscription.channel = supabase
+          .channel('muninn-sessions')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'agent_sessions' }, () => {
+            void get().fetchSessions();
+            void get().fetchFilterOptions();
+          })
+          .subscribe();
+      }
+
+      let hasCleanedUp = false;
+      return () => {
+        if (hasCleanedUp) return;
+        hasCleanedUp = true;
+
+        const currentSubscription = getSessionsSubscriptionState();
+        currentSubscription.subscriberCount = Math.max(0, currentSubscription.subscriberCount - 1);
+
+        if (currentSubscription.subscriberCount > 0 || !currentSubscription.channel) return;
+
+        const channel = currentSubscription.channel;
+        currentSubscription.channel = null;
+        void supabase.removeChannel(channel);
+      };
     },
 
     clearError: () => set({ error: null }, false, 'sessions/clearError'),

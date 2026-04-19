@@ -6,6 +6,7 @@ export default function AgentsPage() {
   const {
     fetchSessions,
     fetchFilterOptions,
+    subscribeToSessions,
     availableInterfaces,
     availableMachines,
     filterInterface,
@@ -17,7 +18,8 @@ export default function AgentsPage() {
   useEffect(() => {
     void fetchSessions();
     void fetchFilterOptions();
-  }, [fetchSessions, fetchFilterOptions]);
+    return subscribeToSessions();
+  }, [fetchSessions, fetchFilterOptions, subscribeToSessions]);
 
   return (
     <div className="h-full flex flex-col">
