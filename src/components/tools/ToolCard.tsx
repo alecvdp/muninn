@@ -51,6 +51,8 @@ export function ToolCard({ tool }: ToolCardProps) {
         return { label: 'To Check Out', className: 'bg-category-to-check-out/20 text-category-to-check-out' };
       case 'not-using':
         return { label: 'Not Using', className: 'bg-category-not-using/20 text-category-not-using' };
+      case 'trial':
+        return { label: 'Trial', className: 'bg-category-trial/20 text-category-trial' };
       case 'watching':
         return { label: 'Watching', className: 'bg-category-watching/20 text-category-watching' };
       default:
@@ -81,7 +83,18 @@ export function ToolCard({ tool }: ToolCardProps) {
 
       <div className="flex items-center gap-2 mb-3">
         {costDisplay && <span className="text-brand font-medium">{costDisplay}</span>}
-        {tool.active_subscription && nextRenewal && (
+        {tool.category === 'trial' && nextRenewal && (
+          <span className={`text-xs ${isRenewingSoon ? 'text-warning' : 'text-low'}`}>
+            Trial ends {nextRenewal.toLocaleDateString()}
+            {isRenewingSoon && (
+              <>
+                {' '}<span aria-hidden="true">{'\u26A0\uFE0F'}</span>
+                <span className="sr-only"> (trial ending soon)</span>
+              </>
+            )}
+          </span>
+        )}
+        {tool.category !== 'trial' && tool.active_subscription && nextRenewal && (
           <span className={`text-xs ${isRenewingSoon ? 'text-warning' : 'text-low'}`}>
             Renews {nextRenewal.toLocaleDateString()}
             {isRenewingSoon && (

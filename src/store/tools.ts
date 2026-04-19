@@ -241,7 +241,9 @@ export const useToolsStore = create<ToolsState>()(
 
       activeToolCount: () => get().tools.filter((tool) => tool.category === 'using').length,
 
-      renewingWithin30Days: () => get().tools.filter((tool) => tool.active_subscription && isWithin30Days(nextRenewalDate(tool))).length,
+      renewingWithin30Days: () => get().tools.filter((tool) =>
+        (tool.active_subscription || tool.category === 'trial') && isWithin30Days(nextRenewalDate(tool)),
+      ).length,
     }),
     { name: 'tools-store' },
   ),
