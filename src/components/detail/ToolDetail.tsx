@@ -61,6 +61,7 @@ export function ToolDetail() {
   );
 
   const [formData, setFormData] = useState<ToolFormData>(initialFormData);
+  const [tagsDraft, setTagsDraft] = useState(initialFormData.tags.join(', '));
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; url?: string }>({});
@@ -321,8 +322,12 @@ export function ToolDetail() {
         <input
           id="tool-tags"
           type="text"
-          value={formData.tags.join(', ')}
-          onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map((t) => t.trim()).filter(Boolean) })}
+          value={tagsDraft}
+          onChange={(e) => setTagsDraft(e.target.value)}
+          onBlur={() => setFormData({ ...formData, tags: tagsDraft.split(',').map((t) => t.trim()).filter(Boolean) })}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') setFormData({ ...formData, tags: tagsDraft.split(',').map((t) => t.trim()).filter(Boolean) });
+          }}
           className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
           placeholder="AI, productivity, writing"
         />
