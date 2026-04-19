@@ -91,12 +91,14 @@ export const useSessionsStore = create<SessionsState>()(
     },
 
     fetchFilterOptions: async () => {
-      const { data } = await supabase
-        .from('agent_sessions')
-        .select('interface, machine');
+      const { data } = await supabase.rpc('get_session_filter_options');
       if (!data) return;
-      const interfaces = [...new Set(data.map((r) => r.interface).filter(Boolean))] as string[];
-      const machines = [...new Set(data.map((r) => r.machine).filter(Boolean))] as string[];
+      const interfaces: string[] = [];
+      const machines: string[] = [];
+      for (const row of data) {
+        if (row.kind === 'interface') interfaces.push(row.value);
+        else if (row.kind === 'machine') machines.push(row.value);
+      }
       set({ availableInterfaces: interfaces.sort(), availableMachines: machines.sort() }, false, 'sessions/filterOptions');
     },
 

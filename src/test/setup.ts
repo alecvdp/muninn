@@ -66,8 +66,11 @@ const channelMock = {
   unsubscribe: vi.fn(),
 };
 
+const rpcBuilder = createQueryBuilder();
+
 export const supabaseMock = {
   from: vi.fn(() => queryBuilder),
+  rpc: vi.fn(() => rpcBuilder),
   channel: vi.fn(() => channelMock),
   removeChannel: vi.fn(),
   __channelMock: channelMock,
