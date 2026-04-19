@@ -253,7 +253,12 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_session_filter_options: {
+        Args: Record<string, never>;
+        Returns: { kind: string; value: string }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

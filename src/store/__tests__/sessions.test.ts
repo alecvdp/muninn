@@ -168,12 +168,13 @@ describe('useSessionsStore', () => {
   // ── fetchFilterOptions ─────────────────────────────────────────────────────
 
   describe('fetchFilterOptions', () => {
-    it('extracts unique interface and machine values', async () => {
+    it('extracts unique interface and machine values from RPC', async () => {
       setMockResult({
         data: [
-          { interface: 'claude-code', machine: 'midgard' },
-          { interface: 'claude.ai', machine: 'midgard' },
-          { interface: 'claude-code', machine: 'yggdrasil' },
+          { kind: 'interface', value: 'claude-code' },
+          { kind: 'interface', value: 'claude.ai' },
+          { kind: 'machine', value: 'midgard' },
+          { kind: 'machine', value: 'yggdrasil' },
         ],
       });
 
@@ -182,19 +183,6 @@ describe('useSessionsStore', () => {
       const state = useSessionsStore.getState();
       expect(state.availableInterfaces).toEqual(['claude-code', 'claude.ai']);
       expect(state.availableMachines).toEqual(['midgard', 'yggdrasil']);
-    });
-
-    it('filters out null values', async () => {
-      setMockResult({
-        data: [
-          { interface: 'claude-code', machine: null },
-          { interface: 'claude.ai', machine: 'midgard' },
-        ],
-      });
-
-      await useSessionsStore.getState().fetchFilterOptions();
-
-      expect(useSessionsStore.getState().availableMachines).toEqual(['midgard']);
     });
 
     it('handles null data gracefully', async () => {
