@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ToolDetail } from '../ToolDetail';
 
 // ── Store mocks ─────────────────────────────────────────────────
@@ -71,8 +71,10 @@ describe('ToolDetail validation', () => {
     fireEvent.change(nameInput, { target: { value: 'My Tool' } });
     fireEvent.click(screen.getByLabelText('Save tool'));
 
-    expect(screen.queryByText('Enter a valid URL (e.g. https://example.com)')).not.toBeInTheDocument();
-    expect(mockCreateTool).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByText('Enter a valid URL (e.g. https://example.com)')).not.toBeInTheDocument();
+      expect(mockCreateTool).toHaveBeenCalled();
+    });
   });
 
   it('allows valid URLs', async () => {
@@ -84,8 +86,10 @@ describe('ToolDetail validation', () => {
     fireEvent.change(urlInput, { target: { value: 'https://example.com' } });
     fireEvent.click(screen.getByLabelText('Save tool'));
 
-    expect(screen.queryByText('Enter a valid URL (e.g. https://example.com)')).not.toBeInTheDocument();
-    expect(mockCreateTool).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByText('Enter a valid URL (e.g. https://example.com)')).not.toBeInTheDocument();
+      expect(mockCreateTool).toHaveBeenCalled();
+    });
   });
 
   it('clears URL error on typing', () => {
