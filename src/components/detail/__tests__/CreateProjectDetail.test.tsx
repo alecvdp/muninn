@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CreateProjectDetail } from '../CreateProjectDetail';
 
 // ── Store mocks ─────────────────────────────────────────────────
@@ -89,8 +89,10 @@ describe('CreateProjectDetail validation', () => {
     fireEvent.change(nameInput, { target: { value: 'My Project' } });
     fireEvent.click(screen.getByText('Create Project'));
 
-    expect(screen.queryByText('Priority must be 0–5')).not.toBeInTheDocument();
-    expect(mockCreateProject).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByText('Priority must be 0–5')).not.toBeInTheDocument();
+      expect(mockCreateProject).toHaveBeenCalled();
+    });
   });
 
   it('allows valid priority values 0–5', async () => {
@@ -102,8 +104,10 @@ describe('CreateProjectDetail validation', () => {
     fireEvent.change(priorityInput, { target: { value: '3' } });
     fireEvent.click(screen.getByText('Create Project'));
 
-    expect(screen.queryByText('Priority must be 0–5')).not.toBeInTheDocument();
-    expect(mockCreateProject).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.queryByText('Priority must be 0–5')).not.toBeInTheDocument();
+      expect(mockCreateProject).toHaveBeenCalled();
+    });
   });
 
   it('sets aria-invalid on name input when error is shown', () => {
