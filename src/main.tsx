@@ -1,14 +1,16 @@
-import { StrictMode } from 'react'
+/* eslint-disable react-refresh/only-export-components */
+import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import App from './App'
-import BoardPage from './pages/BoardPage'
-import ToolsPage from './pages/ToolsPage'
-import AgentsPage from './pages/AgentsPage'
-import SettingsPage from './pages/SettingsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import './index.css'
+
+const BoardPage = lazy(() => import('./pages/BoardPage'))
+const ToolsPage = lazy(() => import('./pages/ToolsPage'))
+const AgentsPage = lazy(() => import('./pages/AgentsPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,10 +18,10 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>
-            <Route index element={<BoardPage />} />
-            <Route path="tools" element={<ToolsPage />} />
-            <Route path="agents" element={<AgentsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
+            <Route index element={<Suspense><BoardPage /></Suspense>} />
+            <Route path="tools" element={<Suspense><ToolsPage /></Suspense>} />
+            <Route path="agents" element={<Suspense><AgentsPage /></Suspense>} />
+            <Route path="settings" element={<Suspense><SettingsPage /></Suspense>} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
