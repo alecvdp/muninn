@@ -29,6 +29,7 @@
     --category-watching: 0 0% 50%;
     --category-not-using: 0 0% 40%;
     --category-to-check-out: 0 0% 50%;
+    --category-trial: 210 60% 55%;
   }
 
   [data-theme='light'] {
@@ -56,6 +57,7 @@
     --category-watching: 0 0% 45%;
     --category-not-using: 0 0% 40%;
     --category-to-check-out: 0 0% 45%;
+    --category-trial: 210 55% 48%;
   }
 
   html,

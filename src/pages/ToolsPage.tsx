@@ -4,7 +4,7 @@ import { ToolsGrid } from '../components/tools/ToolsGrid';
 import { useToolsStore } from '../store/tools';
 import { useUIStore } from '../store/ui';
 
-const categories = ['using', 'to-check-out', 'not-using', 'watching'];
+const categories = ['using', 'trial', 'to-check-out', 'not-using', 'watching'];
 
 export default function ToolsPage() {
   const {
@@ -48,7 +48,7 @@ export default function ToolsPage() {
           <div className="text-normal font-medium">{activeToolCount()}</div>
         </div>
         <div className="bg-muted rounded-lg p-3">
-          <div className="text-low text-xs mb-1">Renewing Soon</div>
+          <div className="text-low text-xs mb-1">Expiring Soon</div>
           <div className={`font-medium ${renewingWithin30Days() > 0 ? 'text-warning' : 'text-normal'}`}>
             {renewingWithin30Days()}
           </div>

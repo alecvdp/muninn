@@ -7,7 +7,7 @@ const platforms = ['mac', 'linux', 'windows', 'web', 'ios', 'android'];
 
 type ToolFormData = {
   name: string;
-  category: 'using' | 'to-check-out' | 'not-using' | 'watching';
+  category: 'using' | 'to-check-out' | 'not-using' | 'watching' | 'trial';
   active_subscription: boolean;
   cost: number;
   billing_cycle: 'monthly' | 'annual' | 'one-time';
@@ -179,11 +179,26 @@ export function ToolDetail() {
           className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
         >
           <option value="using">Using</option>
+          <option value="trial">Trial</option>
           <option value="to-check-out">To Check Out</option>
           <option value="not-using">Not Using</option>
           <option value="watching">Watching</option>
         </select>
       </div>
+
+      {formData.category === 'trial' && (
+        <div>
+          <label htmlFor="tool-trial-end" className="text-low text-xs block mb-1">Trial End Date</label>
+          <input
+            id="tool-trial-end"
+            type="date"
+            value={formData.renewal_date}
+            onChange={(e) => setFormData({ ...formData, renewal_date: e.target.value })}
+            className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-normal text-sm focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+          <p className="mt-1 text-[11px] text-low">When the trial period ends (billing may start)</p>
+        </div>
+      )}
 
       <div>
         <label className="flex items-center gap-2 cursor-pointer">
