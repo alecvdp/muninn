@@ -9,6 +9,39 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      profile: {
+        Row: {
+          id: string;
+          name: string;
+          username: string | null;
+          location: string | null;
+          timezone: string | null;
+          pronouns: string | null;
+          date_of_birth: string | null;
+          communication_style: string | null;
+          context: string | null;
+          updated_at: string | null;
+          sober_since: string | null;
+          recovery_context: string | null;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      preferences: {
+        Row: {
+          id: string;
+          category: string;
+          key: string;
+          value: string;
+          notes: string | null;
+          updated_at: string | null;
+          source: string | null;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       projects: {
         Row: {
           archived_at: string | null;

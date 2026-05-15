@@ -29,8 +29,8 @@ export function SessionCard({ session }: SessionCardProps) {
     if (session.project_id) {
       selectProject(session.project_id);
       openPanel();
-      setView('board');
-      navigate('/');
+      setView('projects');
+      navigate('/projects');
     }
   };
 

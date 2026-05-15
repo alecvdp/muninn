@@ -1,19 +1,25 @@
-import { Kanban, Robot, Lightning, Gear } from '@phosphor-icons/react';
+import { House, Brain, Lightning, FolderOpen, Sparkle, Robot, Gear } from '@phosphor-icons/react';
 import { useNavigate, useLocation } from 'react-router';
 import { useEffect } from 'react';
-import { useUIStore } from '../../store/ui';
+import { useUIStore, type ActiveView } from '../../store/ui';
 
-const navItems = [
-  { id: 'board' as const, path: '/', icon: Kanban, label: 'Board' },
-  { id: 'tools' as const, path: '/tools', icon: Robot, label: 'Tools' },
-  { id: 'agents' as const, path: '/agents', icon: Lightning, label: 'Agents' },
-  { id: 'settings' as const, path: '/settings', icon: Gear, label: 'Settings' },
+const navItems: { id: ActiveView; path: string; icon: React.ComponentType<{ size?: number; weight?: 'regular' | 'fill' }>; label: string }[] = [
+  { id: 'overview', path: '/', icon: House, label: 'Overview' },
+  { id: 'memories', path: '/memories', icon: Brain, label: 'Memories' },
+  { id: 'sessions', path: '/sessions', icon: Lightning, label: 'Sessions' },
+  { id: 'projects', path: '/projects', icon: FolderOpen, label: 'Projects' },
+  { id: 'insights', path: '/insights', icon: Sparkle, label: 'Insights' },
+  { id: 'tools', path: '/tools', icon: Robot, label: 'Tools' },
+  { id: 'settings', path: '/settings', icon: Gear, label: 'Settings' },
 ];
 
-const pathToView: Record<string, 'board' | 'tools' | 'agents' | 'settings'> = {
-  '/': 'board',
+const pathToView: Record<string, ActiveView> = {
+  '/': 'overview',
+  '/memories': 'memories',
+  '/sessions': 'sessions',
+  '/projects': 'projects',
+  '/insights': 'insights',
   '/tools': 'tools',
-  '/agents': 'agents',
   '/settings': 'settings',
 };
 

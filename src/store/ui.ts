@@ -1,9 +1,18 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
+export type ActiveView =
+  | 'overview'
+  | 'memories'
+  | 'sessions'
+  | 'projects'
+  | 'insights'
+  | 'tools'
+  | 'settings';
+
 interface UIState {
   isPanelOpen: boolean;
-  activeView: 'board' | 'tools' | 'agents' | 'settings';
+  activeView: ActiveView;
   theme: 'dark' | 'light';
   openPanel: () => void;
   closePanel: () => void;
@@ -20,7 +29,7 @@ export const useUIStore = create<UIState>()(
     persist(
       (set) => ({
         isPanelOpen: false,
-        activeView: 'board',
+        activeView: 'overview',
         theme: 'dark',
         openPanel: () => set({ isPanelOpen: true }, false, 'ui/openPanel'),
         closePanel: () => set({ isPanelOpen: false }, false, 'ui/closePanel'),

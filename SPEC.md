@@ -1,379 +1,355 @@
-# Muninn — Project Spec
+# Muninn — Product Spec
 
-> A personal project workbench for a solo vibe coder. Kanban board for projects, AI tool tracking, agent session history — all backed by Firmament (Supabase). Named for Odin's raven of memory.
+> **Muninn is the visual control room for Alec's agent memory system.**
+>
+> It is not primarily a Vibe Kanban clone anymore. It is the frontend for Firmament: the Supabase-backed personal memory layer that agents actually use through `personal-mcp`.
 
-**Repo:** `~/git/muninn`
-
----
-
-## Core Idea
-
-Vibe Kanban's mental model and visual design, stripped of everything a solo builder doesn't need. One place to see all projects, track AI subscriptions, and review what agents have been doing — across every machine.
-
----
-
-## Tech Stack
-
-| Layer | Choice | Why |
-|---|---|---|
-| Framework | React + Vite | No SSR needed — pure client app talking to Supabase |
-| Styling | Tailwind CSS + CSS variables (HSL tokens) | Match VK's approach exactly |
-| State | Zustand | Already familiar, lightweight |
-| Backend | Supabase (Firmament) via `@supabase/supabase-js` | Already has projects, sessions, memories — add tools table |
-| Drag & drop | `@hello-pangea/dnd` | What VK uses, maintained fork of react-beautiful-dnd |
-| Resizable panels | `react-resizable-panels` | What VK uses for board + detail split |
-| Icons | `@phosphor-icons/react` | What VK uses — clean, consistent weight system |
-| Fonts | IBM Plex Sans + IBM Plex Mono | What VK uses — clean, readable |
-| Router | `react-router` (v7) | Simpler than TanStack for 3-4 routes |
-| Hosting | Static — `npm run dev` locally, or deploy to Cloudflare Pages / Vercel | Portable |
-
-**Explicitly not using:** Next.js, Tauri, any server-side runtime.
+**Repo:** `~/git/muninn`  
+**Backend:** Firmament / Supabase  
+**Primary user:** Alec, plus the agents helping Alec  
+**Product stance:** local-first-feeling, personal, sharp, fast, inspectable
 
 ---
 
-## Layout
+## 1. Why Muninn Exists
 
-Matching Vibe Kanban's three-zone structure:
+Alec has multiple memory-ish systems: Obsidian/Octarine, Recall, Supermemory, Firmament, MCP tools, agent session logs, project records, and derived insights. The most useful layer for agents right now is Firmament via `personal-mcp`, but it is mostly invisible unless queried by an agent.
 
-```
-┌──────┬──────────────────────────────────────────────────┐
-│      │  Navbar (top bar)                                │
-│      │  view title | search (Cmd+K future)              │
-│ App  ├────────────────────────────┬─────────────────────┤
-│ Bar  │                            │                     │
-│      │  Main Content              │  Detail Panel       │
-│ 48px │  (kanban board, tool grid, │  (resizable,        │
-│      │   session list)            │   slides in on      │
-│      │                            │   card click)       │
-│      │                            │                     │
-└──────┴────────────────────────────┴─────────────────────┘
-```
+Muninn exists to answer:
 
-### AppBar (left icon rail)
+- **What do agents know about me right now?**
+- **What memory/context is being injected into agent sessions?**
+- **What did agents do recently?**
+- **Which memories are useful, stale, duplicated, sensitive, or wrong?**
+- **Which projects are actually active vs lingering as stale metadata?**
+- **Is my memory system quietly working, or silently rotting?**
 
-Narrow vertical sidebar (~48px). Dark background (`bg-secondary`). Icons stacked vertically with tiny section labels.
-
-| Icon | Label | Route |
-|---|---|---|
-| 📋 KanbanSquare | Board | `/` (default) |
-| 🤖 Robot | Tools | `/tools` |
-| ⚡ Lightning | Agents | `/agents` |
-| ⚙️ Gear | Settings | `/settings` |
-
-Bottom of AppBar: app name/version.
-
-### Navbar (top bar)
-
-Slim horizontal bar (`bg-secondary border-b`). Shows:
-- Left: current view name
-- Right: future Cmd+K search trigger, theme toggle
-
-### Main Content
-
-Full remaining space. Content depends on active route.
-
-### Detail Panel
-
-Right side, hidden by default. Slides in when a card is clicked. Resizable via `react-resizable-panels` (min 360px, max 600px, default 440px). `bg-secondary`. Dismiss with × or Escape.
+Muninn should make the agent memory substrate visible, editable, and trustworthy.
 
 ---
 
-## Views
+## 2. Product Reframe
 
-### 1. Board (`/`) — The Kanban
+### Old framing
 
-The home view. Projects from Firmament's `projects` table displayed as cards in status columns.
+A personal project workbench / Vibe Kanban-inspired board with tools and agent history.
 
-**Columns** (mapped to `projects.board_status`):
+### New framing
 
-| Column | `board_status` value | Color dot |
-|---|---|---|
-| Idea | `idea` | blue |
-| Todo | `todo` | yellow |
-| In Progress | `in-progress` | orange/brand |
-| Paused | `paused` | gray |
-| Done | `done` | green |
+**An agent memory observability and curation console.**
 
-> The `board_status` column is the source of truth for kanban position. Dragging between columns updates `board_status` directly.
+Kanban/project tracking still matters, but it is now one lens over Firmament, not the center of the app. Tools/subscriptions are useful, but secondary.
 
-**Project Card** (in column):
-- Project name (bold, `text-normal`)
-- Description (1-2 lines, `text-low`, `line-clamp-2`)
-- Tech stack tags (small badges)
-- Priority indicator (dot or number)
-- Last activity timestamp (from most recent `agent_sessions` row)
-
-**Drag & drop:** Reorder within columns (priority) and across columns (status change). Writes back to Firmament on drop.
-
-**Card click → Detail Panel** opens with:
-- Project name (editable)
-- Status selector
-- Priority selector
-- Description (editable, markdown)
-- Tech stack tags (editable)
-- Repo URL (clickable link)
-- Local path (display only)
-- Recent agent sessions (last 5, from `agent_sessions` where `project_id` matches)
-- Recent memories (from `memories` where `project_id` matches)
-- Created / updated timestamps
-
-**Empty state:** "No projects yet" + button to create one.
-
-**Create project:** + button in column header opens Detail Panel in create mode.
-
-### 2. Tools (`/tools`) — AI Subscriptions
-
-The ai-dashboard data, but backed by a Firmament table instead of markdown files.
-
-**Layout:** Card grid (responsive, 1-3 columns). Optional filter bar at top (category, platform, cost range).
-
-**Summary row** (top of view):
-- Total monthly cost
-- Total annual cost
-- Active tool count
-- Renewing within 30 days count
-
-**Tool Card:**
-- Tool name
-- Category badge: "Using" (green) or "To Check Out" (muted)
-- Cost + billing cycle (`$20/mo`, `$100/yr`)
-- Platform icons (mac, linux, web, ios)
-- Renewal date (+ "in Xd" if within 30 days, highlighted)
-- Notes (1-2 lines, truncated)
-- Tags
-
-**Card click → Detail Panel** with full tool info, editable fields.
-
-**Create tool:** + button top-right opens Detail Panel in create mode.
-
-### 3. Agents (`/agents`) — Session History
-
-A timeline/log view of agent activity pulled from `agent_sessions`.
-
-**Layout:** Vertical feed, most recent first. Grouped by date.
-
-**Session Card:**
-- Interface badge (claude-code, pi, claude.ai, etc.)
-- Machine badge (midgard, mini-ygg, etc.)
-- Summary text
-- Duration (started_at → ended_at)
-- Project link (if `project_id` set, clickable → navigates to Board + opens that project's detail)
-- Memories created count
-
-**Filters:** Interface, machine, project, date range.
-
-### 4. Settings (`/settings`)
-
-Minimal for MVP:
-- Supabase connection status (green/red indicator)
-- Theme toggle (dark/light — dark default)
-- Future: Herstel palette picker
+The primary object is not a task. The primary object is **context**.
 
 ---
 
-## Data Model
+## 3. Core Principles
 
-### Existing Firmament Tables
+1. **Show what agents see**  
+   Muninn should preview the context an agent would receive from Firmament: profile, active projects, preferences, recent sessions, recent memories, and derived insights.
 
-- **`projects`** — already has: name, status, description, local_path, repo_url, tech_stack, priority, context, last_agent_context. **Migration needed:** add `board_status` column and `board_position` (integer for ordering within a column).
-- **`agent_sessions`** — already has: interface, machine, summary, project_id, started_at, ended_at, memories_created
-- **`memories`** — already has: content, category, tags, project_id, created_at
+2. **Make memory inspectable**  
+   Every memory should have visible metadata: source, tags, category, project linkage, confidence, created date, and embedding/index status where available.
 
-### New Table: `tools`
+3. **Curation beats capture**  
+   The system already captures plenty. Muninn should help Alec review, edit, merge, promote, archive, or delete memory.
 
-Migrations to add to `personal-mcp/migrations/`:
+4. **Staleness is a first-class signal**  
+   Projects, preferences, insights, and recommendations should surface when they are old, contradicted, or repeatedly ignored.
 
-```sql
--- 005_add_board_status_to_projects.sql
+5. **Agent-native, not note-app-native**  
+   This is not Obsidian. It should focus on operational context agents use, not freeform knowledge management.
 
-alter table projects
-  add column if not exists board_status text default 'idea',
-  add column if not exists board_position integer default 0;
-
-comment on column projects.board_status is 'Kanban column: idea, todo, in-progress, paused, done';
-comment on column projects.board_position is 'Sort order within a kanban column (lower = higher)';
-
--- Backfill existing projects based on current status
-update projects set board_status = status where board_status = 'idea';
-```
-
-```sql
--- 006_add_tools_table.sql
-
-create table tools (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  category text not null default 'to-check-out',  -- 'tools-using' | 'to-check-out'
-  cost numeric(10,2) default 0,
-  billing_cycle text,  -- 'monthly' | 'annual' | 'one-time' | null
-  renewal_date date,
-  platform text[] default '{}',  -- ['mac', 'linux', 'web', 'ios', 'android', 'windows']
-  url text,
-  tags text[] default '{}',
-  notes text default '',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
-
--- RLS: allow anon read/write (single-user app)
-alter table tools enable row level security;
-create policy "Allow all access" on tools for all using (true) with check (true);
-
-comment on table tools is 'AI tool subscriptions and tools to evaluate';
-```
+6. **Readable over elaborate**  
+   The UI should feel like a cockpit: dense enough to be useful, calm enough to trust.
 
 ---
 
-## Styling
+## 4. Primary Views
 
-### Color Tokens (CSS Variables)
+### 4.1 Overview — “What agents know”
 
-Adapted from Vibe Kanban's system. Dark theme default:
+Default route: `/` or `/overview`.
 
-```css
-:root {
-  /* Text hierarchy */
-  --text-high:    0 0% 96%;      /* primary text, headings */
-  --text-normal:  0 0% 77%;      /* body text */
-  --text-low:     0 0% 56%;      /* secondary, placeholders */
+Purpose: give Alec a one-screen answer to “what context does my agent memory layer currently provide?”
 
-  /* Background hierarchy */
-  --bg-primary:   0 0% 13%;      /* main content area */
-  --bg-secondary: 0 0% 11%;      /* sidebar, panels, navbar */
-  --bg-panel:     0 0% 16%;      /* inputs, hover states */
+Sections:
 
-  /* Borders */
-  --border:       0 0% 20%;
+- **Profile card**
+  - name
+  - timezone/location
+  - pronouns
+  - communication style
+  - key personal context fields if present
 
-  /* Brand accent — Herstel Warm-inspired orange */
-  --brand:        25 82% 54%;
-  --brand-hover:  25 75% 62%;
+- **Active projects**
+  - project name
+  - status / board status
+  - local path
+  - last updated
+  - warning if stale or likely superseded
 
-  /* Semantic */
-  --success:      117 38% 50%;
-  --error:        0 59% 57%;
-  --info:         210 50% 55%;
-}
-```
+- **Recent sessions**
+  - last 5–10 agent sessions
+  - interface, machine, summary, started/ended
 
-### Typography
+- **Recent memories**
+  - last 5–10 memories
+  - tags/category/confidence
 
-- Body: `IBM Plex Sans`, 12-14px base
-- Mono: `IBM Plex Mono` for IDs, paths, timestamps
-- Tight spacing matching VK (`half=4px`, `base=8px`, `double=16px`)
-- Small border-radius (~0.25rem)
+- **Derived insights**
+  - recent high-confidence insights
+  - predictions/recommendations requiring action
 
-### Card Styling
+- **System health**
+  - last memory timestamp
+  - last session timestamp
+  - projects with no recent activity
+  - embedding/indexing gaps if detectable
+  - MCP/service status if available later
 
-Following VK's approach:
-- `bg-primary` with `border` on `border` color
-- `-mt-[1px] -mx-[1px]` overlap trick to avoid double borders
-- Hover: subtle `bg-panel` shift
-- Selected/open: `ring-2 ring-brand ring-inset`
-- Action buttons invisible until `group-hover`
+Key feature: **Agent Context Preview** — a panel that approximates what `personal_get_context` returns to agents.
 
 ---
 
-## Project Structure
+### 4.2 Memories
 
-```
-muninn/
-├── index.html
-├── vite.config.ts
-├── package.json
-├── tailwind.config.ts
-├── src/
-│   ├── main.tsx                  # React root + router
-│   ├── App.tsx                   # Layout shell (AppBar + Navbar + Outlet + Panel)
-│   ├── index.css                 # CSS variables, font imports, Tailwind directives
-│   ├── lib/
-│   │   └── supabase.ts           # Supabase client init
-│   ├── store/
-│   │   ├── projects.ts           # Zustand: projects CRUD + kanban state
-│   │   ├── tools.ts              # Zustand: tools CRUD
-│   │   ├── sessions.ts           # Zustand: agent sessions (read-only)
-│   │   └── ui.ts                 # Zustand: panel state, active view, theme
-│   ├── components/
-│   │   ├── layout/
-│   │   │   ├── AppBar.tsx
-│   │   │   ├── Navbar.tsx
-│   │   │   └── DetailPanel.tsx   # Resizable right panel shell
-│   │   ├── board/
-│   │   │   ├── KanbanBoard.tsx   # Column layout + drag context
-│   │   │   ├── KanbanColumn.tsx  # Single column (header + droppable)
-│   │   │   └── ProjectCard.tsx   # Card in column
-│   │   ├── tools/
-│   │   │   ├── ToolsGrid.tsx     # Card grid + summary stats
-│   │   │   └── ToolCard.tsx
-│   │   ├── agents/
-│   │   │   ├── SessionFeed.tsx   # Vertical timeline
-│   │   │   └── SessionCard.tsx
-│   │   ├── detail/
-│   │   │   ├── ProjectDetail.tsx # Right panel: project view/edit
-│   │   │   └── ToolDetail.tsx    # Right panel: tool view/edit
-│   │   └── ui/                   # Shared primitives (Badge, Button, etc.)
-│   ├── pages/
-│   │   ├── BoardPage.tsx
-│   │   ├── ToolsPage.tsx
-│   │   ├── AgentsPage.tsx
-│   │   └── SettingsPage.tsx
-│   └── types/
-│       ├── project.ts
-│       ├── tool.ts
-│       └── session.ts
-└── SPEC.md                       # This file
+Route: `/memories`.
+
+Purpose: browse, search, and curate discrete memories stored in Firmament.
+
+Features:
+
+- full-text search initially; semantic search later if exposed safely
+- filters by tag, category, confidence, project, date range
+- table/list toggle
+- memory detail panel
+- edit content/tags/category/confidence/project linkage
+- archive/delete where supported
+- mark as stale / needs review
+- show related sessions and projects
+- identify likely duplicates or contradictions later
+
+Important interactions:
+
+- **Promote** memory to a higher-level insight or project context
+- **Demote/archive** noisy memories
+- **Correct** inaccurate memories without needing SQL
+
+---
+
+### 4.3 Sessions
+
+Route: `/sessions`.
+
+Purpose: inspect what agents have been doing across interfaces and machines.
+
+Features:
+
+- chronological feed grouped by day/week
+- filters: interface, machine, project, date range
+- detail panel with summary, timestamps, duration, memories created
+- link to related project and memories
+- flag stub/low-quality summaries
+- identify sessions without project linkage
+
+Useful analytics:
+
+- sessions per week
+- interface mix: pi, claude-code, api-direct, etc.
+- machines used
+- percentage of sessions with meaningful summaries
+- unlinked sessions count
+
+---
+
+### 4.4 Projects
+
+Route: `/projects`.
+
+Purpose: maintain the project records agents use to orient themselves.
+
+This can retain the existing kanban board, but the view should be reinterpreted as **project context management**, not task management.
+
+Features:
+
+- board/list toggle
+- active/paused/archived filters
+- project detail panel
+- edit name, description, local path, repo URL, status, board status, priority, context, tech stack
+- show recent sessions and memories linked to project
+- stale project warnings
+- archive obvious dead projects
+
+Key issue to surface: projects like “Agent Command Center” that remain active despite repeated insights saying they are superseded.
+
+---
+
+### 4.5 Insights
+
+Route: `/insights`.
+
+Purpose: review derived patterns, predictions, recommendations, and weekly syntheses.
+
+Features:
+
+- list by created date
+- filter by type: pattern, trend, prediction, connection, recommendation
+- confidence filter
+- detail panel
+- mark as accepted/rejected/resolved/stale if schema supports it later
+- show related memories/sessions/projects if available
+
+This view is where Muninn becomes more than CRUD: it helps Alec notice recurring meta-patterns the agents are detecting.
+
+---
+
+### 4.6 Tools
+
+Route: `/tools`.
+
+Purpose: keep the existing AI subscription/app tracker, but demote it to a supporting module.
+
+Features remain roughly as originally planned:
+
+- tool cards
+- cost summaries
+- renewal alerts
+- category/platform/tag filters
+- notes and URLs
+
+This is useful, but not MVP-critical for the memory-console pivot.
+
+---
+
+### 4.7 Settings
+
+Route: `/settings`.
+
+Purpose: connection/configuration and lightweight diagnostics.
+
+Features:
+
+- Supabase connection status
+- app version
+- theme toggle
+- visible table availability checks
+- future: MCP status checks, embedding health, data export tools
+
+---
+
+## 5. Data Sources
+
+Muninn should read directly from the existing Firmament Supabase database.
+
+Known/expected tables include:
+
+- `profile`
+- `projects`
+- `preferences`
+- `agent_sessions`
+- `memories`
+- `derived_insights`
+- `tools` if present
+
+Avoid inventing new schema unless necessary. Prefer read-only MVP behavior where writes are unclear or risky.
+
+---
+
+## 6. MVP Scope
+
+The MVP should prove that Muninn is useful as a memory observability console.
+
+### MVP must have
+
+1. Overview page that approximates `personal_get_context`
+2. Memories list with search/filter and detail view
+3. Sessions list with filters and detail view
+4. Projects list/board with detail view
+5. Insights list with detail view
+6. Supabase connection handling
+7. Clear empty/error/loading states
+
+### MVP can defer
+
+- drag-and-drop kanban polish
+- semantic search
+- memory deduplication
+- contradiction detection
+- MCP server status integrations
+- write/edit flows for sensitive tables
+- tool subscription tracker polish
+- advanced charts
+
+---
+
+## 7. UX Direction
+
+Visual feel:
+
+- dark-first
+- dense but calm
+- IBM Plex Sans / Mono is still good
+- left icon rail is still good
+- resizable detail panel is still good
+- avoid dashboard clutter; prioritize inspectable records
+
+Information architecture:
+
+```text
+Overview
+Memories
+Sessions
+Projects
+Insights
+Tools
+Settings
 ```
 
----
+The app should feel less like Jira/Trello and more like:
 
-## MVP Scope
-
-### Phase 1: Board + Shell
-- [ ] Vite + React + Tailwind project setup (replace Next.js)
-- [ ] CSS variables + dark theme + IBM Plex fonts
-- [ ] AppBar + Navbar + main layout
-- [ ] Supabase client connecting to Firmament
-- [ ] Kanban board reading from `projects` table
-- [ ] Project cards with drag & drop between columns
-- [ ] Detail panel opening on card click
-- [ ] Create / edit / update project from detail panel
-
-### Phase 2: Tools
-- [ ] `tools` table migration in Firmament
-- [ ] Seed script to migrate ai-dashboard markdown → tools table
-- [ ] Tools grid view with summary stats
-- [ ] Tool cards with cost, platform, renewal info
-- [ ] Tool detail panel (create / edit)
-
-### Phase 3: Agents
-- [ ] Session feed reading from `agent_sessions`
-- [ ] Session cards with interface/machine badges
-- [ ] Filtering by interface, machine, project
-- [ ] Project cross-linking (click project name → Board view)
-
-### Phase 4: Polish
-- [ ] Light theme
-- [ ] Keyboard shortcuts (Cmd+1-4 for sections)
-- [ ] Cmd+K search across projects and tools
-- [ ] Herstel palette picker
-- [ ] Settings page with connection status
+> “Here is the living memory graph your agents are using. Here is where it is strong. Here is where it is stale. Here is what needs your attention.”
 
 ---
 
-## Non-Goals (for now)
+## 8. Implementation Notes
 
-- Agent dispatch / running agents from the UI
-- Real-time agent status monitoring
-- Team/collaboration features
-- Mobile-native app (web is fine on phone)
-- Obsidian vault integration (that's Yggdrasil Center's job)
-- Task/issue-level tracking within projects (projects are the unit, not tickets)
+Current stack is still appropriate:
+
+- React + Vite
+- TypeScript
+- Tailwind
+- Supabase JS
+- Zustand if useful
+- React Router
+- resizable detail panels
+- Phosphor icons
+
+Recommended implementation order:
+
+1. Audit existing components/routes/data access.
+2. Keep useful shell/layout pieces.
+3. Rename/reframe navigation around Overview, Memories, Sessions, Projects, Insights.
+4. Implement read-only Overview from existing tables.
+5. Implement Memories list/detail.
+6. Implement Sessions list/detail.
+7. Implement Projects list/detail.
+8. Implement Insights list/detail.
+9. Only then revisit writes/editing and Tools.
 
 ---
 
-## Decisions Made
+## 9. Success Criteria
 
-1. **Project name** — Muninn (Odin's raven of memory).
-2. **Project status mapping** — dedicated `board_status` column on `projects` table. Clean, explicit, no hacks.
-3. **Tool data source** — Firmament `tools` table is the source of truth. The ai-dashboard markdown data was mostly samples — start fresh.
-4. **Auth** — skip for now. Supabase anon key is fine for a personal tool.
+Muninn is working if Alec can open it and quickly answer:
+
+- What do agents currently know about me?
+- What have agents done recently?
+- What project context will agents rely on?
+- What memories were added recently?
+- What insights keep recurring?
+- What should be corrected, archived, or promoted?
+- Is Firmament healthy enough to keep relying on?
+
+If the app makes Alec trust and improve the memory layer that agents already use, it succeeds.

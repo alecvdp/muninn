@@ -5,7 +5,7 @@ describe('useUIStore', () => {
   beforeEach(() => {
     useUIStore.setState({
       isPanelOpen: false,
-      activeView: 'board',
+      activeView: 'overview',
       theme: 'dark',
     });
   });
@@ -15,7 +15,7 @@ describe('useUIStore', () => {
   it('has correct initial state', () => {
     const state = useUIStore.getState();
     expect(state.isPanelOpen).toBe(false);
-    expect(state.activeView).toBe('board');
+    expect(state.activeView).toBe('overview');
     expect(state.theme).toBe('dark');
   });
 
@@ -43,7 +43,7 @@ describe('useUIStore', () => {
     });
 
     it('cycles through all views', () => {
-      const views = ['board', 'tools', 'agents', 'settings'] as const;
+      const views = ['overview', 'memories', 'sessions', 'projects', 'insights', 'tools', 'settings'] as const;
       for (const view of views) {
         useUIStore.getState().setView(view);
         expect(useUIStore.getState().activeView).toBe(view);

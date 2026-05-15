@@ -1,6 +1,6 @@
 # Muninn 🐦‍⬛
 
-> Personal project workbench for solo vibe coders. Kanban board, AI tool tracking, agent session history — backed by [Firmament](https://github.com/alecvdp/personal-mcp) (Supabase).
+> Visual control room for Alec's agent memory system. Frontend for [Firmament](https://github.com/alecvdp/personal-mcp) — the Supabase-backed personal memory layer that agents use through `personal-mcp`.
 
 Named for Odin's raven of memory.
 
@@ -8,14 +8,17 @@ Named for Odin's raven of memory.
 
 ## What it does
 
-Muninn gives you one place to manage your projects, track AI subscriptions, and review what your agents have been doing — across every machine.
+Muninn makes the agent memory substrate visible, inspectable, and (eventually) curatable. The default view answers one question: **what do agents currently know about me?**
 
-- **Board** — Kanban board with drag-and-drop, filtering, search, and project archiving
-- **Tools** — AI subscription tracker with cost summaries and renewal alerts
-- **Agents** — Paginated session history with interface/machine filters
-- **Settings** — Connection status, theme toggle, version info
+- **Overview** — Profile, active projects, recent sessions, recent memories, derived insights, and lightweight data-health signals (last memory/session, stale projects, totals)
+- **Memories** — Browse, search, and filter the discrete facts agents have recorded (read-only in MVP)
+- **Sessions** — Chronological feed of agent sessions with interface/machine filters
+- **Projects** — Kanban board of projects agents orient themselves around (drag-and-drop, archiving, search)
+- **Insights** — Derived patterns, trends, predictions, and connections produced by the reasoning pipeline
+- **Tools** — AI subscription tracker (cost summary, renewal alerts) — secondary module
+- **Settings** — Supabase connection status, theme toggle, version info
 
-All data lives in your Supabase instance (Firmament) with realtime sync across tabs and machines.
+All data lives in your Firmament Supabase instance. Reads are live; the MVP intentionally avoids risky write flows for the new memory/insight tables.
 
 ## Tech stack
 
@@ -62,7 +65,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
 ### Database setup
 
-Muninn reads from four Firmament tables. If you're starting fresh, apply these migrations to your Supabase project:
+Muninn reads from the existing Firmament tables: `profile`, `projects`, `agent_sessions`, `memories`, `derived_insights`, and `tools`. The schema is owned by [personal-mcp](https://github.com/alecvdp/personal-mcp). The migrations below only cover the columns Muninn itself adds (kanban state, archived flag, the `tools` table) — apply them only if you're starting fresh:
 
 **Projects table** (add kanban columns):
 ```sql
@@ -99,7 +102,7 @@ alter publication supabase_realtime add table projects;
 alter publication supabase_realtime add table tools;
 ```
 
-The `agent_sessions` and `memories` tables are managed by [personal-mcp](https://github.com/alecvdp/personal-mcp) — Muninn reads from them but doesn't write.
+The `profile`, `preferences`, `agent_sessions`, `memories`, and `derived_insights` tables are managed by [personal-mcp](https://github.com/alecvdp/personal-mcp). Muninn reads from them but does not write — write/curation flows for memory data are intentionally deferred past MVP.
 
 ### Run
 
@@ -117,7 +120,7 @@ Open `http://localhost:5173`.
 | `npm run build` | Type-check with tsc, then build for production |
 | `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |
-| `npm test` | Run tests (Vitest, 123 tests) |
+| `npm test` | Run tests (Vitest, 135 tests) |
 | `npm run test:watch` | Run tests in watch mode |
 
 ## Project structure
@@ -136,12 +139,18 @@ muninn/
 │   │   ├── supabase.ts     # Typed Supabase client
 │   │   └── dates.ts        # Date utilities (renewal checks)
 │   ├── pages/
-│   │   ├── BoardPage.tsx   # Kanban with search/filter/archive
-│   │   ├── ToolsPage.tsx   # Tool grid with cost summary
-│   │   ├── AgentsPage.tsx  # Session feed with filters
+│   │   ├── OverviewPage.tsx # Profile + projects + sessions + memories + insights + health
+│   │   ├── MemoriesPage.tsx # Memory list with search/filter/expand
+│   │   ├── InsightsPage.tsx # Derived insights with type/confidence filters
+│   │   ├── BoardPage.tsx    # Kanban with search/filter/archive (mounted at /projects)
+│   │   ├── ToolsPage.tsx    # Tool grid with cost summary
+│   │   ├── AgentsPage.tsx   # Session feed with filters (mounted at /sessions)
 │   │   ├── SettingsPage.tsx
 │   │   └── NotFoundPage.tsx
 │   ├── store/
+│   │   ├── overview.ts     # Aggregate fetch for the home dashboard
+│   │   ├── memories.ts     # Memory list with pagination + filters
+│   │   ├── insights.ts     # Derived insights with pagination + filters
 │   │   ├── projects.ts     # Projects CRUD, kanban state, realtime
 │   │   ├── tools.ts        # Tools CRUD, cost calculations, realtime
 │   │   ├── sessions.ts     # Sessions with pagination + server-side filters
@@ -172,19 +181,53 @@ muninn/
 │ App  ├──────────────────────┬──────────────────────┤
 │ Bar  │                      │                      │
 │      │  Main Content        │  Detail Panel        │
-│ 48px │  (board / tools /    │  (440px, resizable,  │
-│      │   agents / settings) │   opens on click)    │
+│ 48px │  (overview / mem /   │  (440px, resizable,  │
+│      │   sess / proj / etc) │   opens on click)    │
 │      │                      │                      │
 └──────┴──────────────────────┴──────────────────────┘
 ```
 
-- **AppBar** — Icon rail on the left. Board, Tools, Agents, Settings.
+- **AppBar** — Icon rail on the left. Overview, Memories, Sessions, Projects, Insights, Tools, Settings.
 - **Navbar** — Top bar with view title and theme toggle.
 - **Detail Panel** — Slides in from the right when you click a card. Escape to close. Focus-trapped for accessibility.
 
-## Board view
+## Overview view
 
-The home view. Projects displayed as cards in kanban columns:
+The home view (`/`). A one-screen answer to "what do agents currently know?"
+
+Sections:
+- **Profile** card from the `profile` table (name, pronouns, location, timezone, communication style, context)
+- **Active projects** with stale-warning glyph for any active project that hasn't been touched in 60+ days
+- **Recent sessions** (last 8) from `agent_sessions`
+- **Recent memories** (last 8) from `memories` (excludes superseded)
+- **Recent insights** (last 6) from `derived_insights` (excludes superseded)
+- **Health bar** with totals and "last memory / last session" relative times
+
+Read-only by design. Each section has a "View all →" link into the matching list page.
+
+## Memories view
+
+Browse, search, and filter the discrete facts agents have recorded (`/memories`).
+
+- Server-side ILIKE search on `content`
+- Filter by category, confidence, tag
+- Click a row to expand inline (full content + tags + ids + provenance)
+- Paginated (25 per page, "Load more")
+- Read-only in MVP — promote/demote/edit flows come later
+
+## Sessions view
+
+Chronological feed of agent sessions from `agent_sessions` (`/sessions`).
+
+- Sessions grouped by date
+- Paginated (25 per page, "Load more")
+- Filter by interface (claude-code, claude.ai, amp, etc.)
+- Filter by machine (midgard, mini-ygg, etc.)
+- Server-side filtering (queries pushed to Supabase, not client-side)
+
+## Projects view
+
+Kanban board of projects (`/projects`) — the records agents read to orient themselves.
 
 | Column | Status | Color |
 |---|---|---|
@@ -203,9 +246,19 @@ The home view. Projects displayed as cards in kanban columns:
 - Click any card to edit in the detail panel
 - Create new projects with the + button
 
+## Insights view
+
+Derived patterns, trends, predictions, and connections from `derived_insights` (`/insights`).
+
+- Filter by `insight_type` (pattern / trend / prediction / connection)
+- Filter by confidence (high / medium / low)
+- Click a row to expand inline (full content + provenance counts)
+- Excludes superseded insights
+- Read-only in MVP
+
 ## Tools view
 
-Track AI subscriptions and tools you're evaluating.
+Track AI subscriptions and tools you're evaluating (`/tools`).
 
 **Summary stats bar** at the top shows:
 - Total monthly cost
@@ -216,16 +269,6 @@ Track AI subscriptions and tools you're evaluating.
 **Each tool card** shows name, category badge (Using/To Check Out), cost, billing cycle, platform icons, renewal date, and tags.
 
 **Filters:** Search by name, filter by category, filter by platform.
-
-## Agents view
-
-Chronological feed of agent sessions from the `agent_sessions` table.
-
-- Sessions grouped by date
-- Paginated (25 per page, "Load more" button)
-- Filter by interface (claude-code, claude.ai, amp, etc.)
-- Filter by machine (midgard, mini-ygg, etc.)
-- Server-side filtering (queries pushed to Supabase, not client-side)
 
 ## Theming
 

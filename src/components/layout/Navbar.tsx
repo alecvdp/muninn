@@ -2,9 +2,12 @@ import { Sun, Moon } from '@phosphor-icons/react';
 import { useUIStore } from '../../store/ui';
 
 const viewTitles: Record<string, string> = {
-  board: 'Board',
+  overview: 'Overview',
+  memories: 'Memories',
+  sessions: 'Sessions',
+  projects: 'Projects',
+  insights: 'Insights',
   tools: 'Tools',
-  agents: 'Agents',
   settings: 'Settings',
 };
 
