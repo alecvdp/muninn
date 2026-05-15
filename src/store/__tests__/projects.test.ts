@@ -32,6 +32,7 @@ describe('useProjectsStore', () => {
       selectedProject: null,
       isLoading: false,
       error: null,
+      projectCounts: {},
     });
   });
 
@@ -410,6 +411,48 @@ describe('useProjectsStore', () => {
       useProjectsStore.getState().clearError();
 
       expect(useProjectsStore.getState().error).toBeNull();
+    });
+  });
+
+  // ── fetchProjectCounts ─────────────────────────────────────────────────────
+
+  describe('fetchProjectCounts', () => {
+    it('aggregates session and memory rows by project_id', async () => {
+      // The mock returns the same data for every from() call, so each row will
+      // be counted once for sessions and once for memories.
+      setMockResult({
+        data: [
+          { project_id: 'proj-a' },
+          { project_id: 'proj-a' },
+          { project_id: 'proj-b' },
+          { project_id: null },
+        ],
+      });
+
+      await useProjectsStore.getState().fetchProjectCounts();
+
+      const counts = useProjectsStore.getState().projectCounts;
+      expect(counts['proj-a']).toEqual({ sessions: 2, memories: 2 });
+      expect(counts['proj-b']).toEqual({ sessions: 1, memories: 1 });
+      expect(counts['null']).toBeUndefined();
+    });
+
+    it('handles empty result set', async () => {
+      setMockResult({ data: [] });
+
+      await useProjectsStore.getState().fetchProjectCounts();
+
+      expect(useProjectsStore.getState().projectCounts).toEqual({});
+    });
+
+    it('ignores rows without a project_id', async () => {
+      setMockResult({
+        data: [{ project_id: null }, { project_id: null }],
+      });
+
+      await useProjectsStore.getState().fetchProjectCounts();
+
+      expect(useProjectsStore.getState().projectCounts).toEqual({});
     });
   });
 

@@ -4,6 +4,11 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { ProjectRow, ProjectInsert, ProjectUpdate } from '../types';
 
+export interface ProjectCounts {
+  sessions: number;
+  memories: number;
+}
+
 interface ProjectsState {
   projects: ProjectRow[];
   selectedProjectId: string | null;
@@ -14,7 +19,9 @@ interface ProjectsState {
   searchQuery: string;
   filterPriority: number | null;
   showArchived: boolean;
+  projectCounts: Record<string, ProjectCounts>;
   fetchProjects: () => Promise<void>;
+  fetchProjectCounts: () => Promise<void>;
   subscribeToProjects: () => () => void;
   createProject: (project: ProjectInsert) => Promise<ProjectRow | null>;
   updateProject: (id: string, updates: ProjectUpdate) => Promise<ProjectRow | null>;
@@ -73,6 +80,7 @@ export const useProjectsStore = create<ProjectsState>()(
     searchQuery: '',
     filterPriority: null,
     showArchived: false,
+    projectCounts: {},
 
     fetchProjects: async () => {
       set({ isLoading: true, error: null }, false, 'projects/fetchProjects:start');
@@ -99,6 +107,30 @@ export const useProjectsStore = create<ProjectsState>()(
         false,
         'projects/fetchProjects:success',
       );
+    },
+
+    fetchProjectCounts: async () => {
+      const [sessRes, memRes] = await Promise.all([
+        supabase.from('agent_sessions').select('project_id'),
+        supabase.from('memories').select('project_id'),
+      ]);
+
+      const counts: Record<string, ProjectCounts> = {};
+
+      for (const row of sessRes.data ?? []) {
+        const pid = (row as { project_id: string | null }).project_id;
+        if (!pid) continue;
+        if (!counts[pid]) counts[pid] = { sessions: 0, memories: 0 };
+        counts[pid].sessions += 1;
+      }
+      for (const row of memRes.data ?? []) {
+        const pid = (row as { project_id: string | null }).project_id;
+        if (!pid) continue;
+        if (!counts[pid]) counts[pid] = { sessions: 0, memories: 0 };
+        counts[pid].memories += 1;
+      }
+
+      set({ projectCounts: counts }, false, 'projects/fetchProjectCounts');
     },
 
     subscribeToProjects: () => {

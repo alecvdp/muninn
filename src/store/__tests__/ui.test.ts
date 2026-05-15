@@ -7,6 +7,7 @@ describe('useUIStore', () => {
       isPanelOpen: false,
       activeView: 'overview',
       theme: 'dark',
+      projectsViewMode: 'list',
     });
   });
 
@@ -17,6 +18,7 @@ describe('useUIStore', () => {
     expect(state.isPanelOpen).toBe(false);
     expect(state.activeView).toBe('overview');
     expect(state.theme).toBe('dark');
+    expect(state.projectsViewMode).toBe('list');
   });
 
   // ── Panel ──────────────────────────────────────────────────────────────────
@@ -48,6 +50,21 @@ describe('useUIStore', () => {
         useUIStore.getState().setView(view);
         expect(useUIStore.getState().activeView).toBe(view);
       }
+    });
+  });
+
+  // ── Projects view mode ─────────────────────────────────────────────────────
+
+  describe('setProjectsViewMode', () => {
+    it('switches to kanban', () => {
+      useUIStore.getState().setProjectsViewMode('kanban');
+      expect(useUIStore.getState().projectsViewMode).toBe('kanban');
+    });
+
+    it('switches back to list', () => {
+      useUIStore.setState({ projectsViewMode: 'kanban' });
+      useUIStore.getState().setProjectsViewMode('list');
+      expect(useUIStore.getState().projectsViewMode).toBe('list');
     });
   });
 

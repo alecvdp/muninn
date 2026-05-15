@@ -1,20 +1,24 @@
 import { useEffect } from 'react';
-import { Plus, MagnifyingGlass, Archive } from '@phosphor-icons/react';
+import { Plus, MagnifyingGlass, Archive, List, Kanban } from '@phosphor-icons/react';
 import { KanbanBoard } from '../components/board/KanbanBoard';
+import { ProjectList } from '../components/board/ProjectList';
 import { useProjectsStore } from '../store/projects';
 import { useUIStore } from '../store/ui';
 
 const priorities = [1, 2, 3, 4, 5];
 
 export default function BoardPage() {
-  const { projects, fetchProjects, subscribeToProjects, isLoading, selectProject, searchQuery, setSearchQuery, filterPriority, setFilterPriority, showArchived, setShowArchived } = useProjectsStore();
+  const { projects, fetchProjects, fetchProjectCounts, subscribeToProjects, isLoading, selectProject, searchQuery, setSearchQuery, filterPriority, setFilterPriority, showArchived, setShowArchived } = useProjectsStore();
   const openPanel = useUIStore((s) => s.openPanel);
+  const projectsViewMode = useUIStore((s) => s.projectsViewMode);
+  const setProjectsViewMode = useUIStore((s) => s.setProjectsViewMode);
 
   useEffect(() => {
     void fetchProjects();
+    void fetchProjectCounts();
     const cleanup = subscribeToProjects();
     return cleanup;
-  }, [fetchProjects, subscribeToProjects]);
+  }, [fetchProjects, fetchProjectCounts, subscribeToProjects]);
 
   if (isLoading && projects.length === 0) {
     return (
@@ -27,7 +31,43 @@ export default function BoardPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h2 className="text-normal font-medium">Projects</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-normal font-medium">Projects</h2>
+          <div
+            role="group"
+            aria-label="View mode"
+            className="flex items-center bg-muted border border-border rounded-lg p-0.5"
+          >
+            <button
+              type="button"
+              onClick={() => setProjectsViewMode('list')}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors ${
+                projectsViewMode === 'list'
+                  ? 'bg-elevated text-normal'
+                  : 'text-low hover:text-normal'
+              }`}
+              aria-pressed={projectsViewMode === 'list'}
+              title="List view"
+            >
+              <List size={14} />
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setProjectsViewMode('kanban')}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors ${
+                projectsViewMode === 'kanban'
+                  ? 'bg-elevated text-normal'
+                  : 'text-low hover:text-normal'
+              }`}
+              aria-pressed={projectsViewMode === 'kanban'}
+              title="Kanban view"
+            >
+              <Kanban size={14} />
+              Kanban
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-3">
           <div className="relative">
             <MagnifyingGlass size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-low" />
@@ -86,8 +126,10 @@ export default function BoardPage() {
             </button>
           </div>
         </div>
-      ) : (
+      ) : projectsViewMode === 'kanban' ? (
         <KanbanBoard />
+      ) : (
+        <ProjectList />
       )}
     </div>
   );

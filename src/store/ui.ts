@@ -10,14 +10,18 @@ export type ActiveView =
   | 'tools'
   | 'settings';
 
+export type ProjectsViewMode = 'list' | 'kanban';
+
 interface UIState {
   isPanelOpen: boolean;
   activeView: ActiveView;
   theme: 'dark' | 'light';
+  projectsViewMode: ProjectsViewMode;
   openPanel: () => void;
   closePanel: () => void;
   setView: (view: UIState['activeView']) => void;
   toggleTheme: () => void;
+  setProjectsViewMode: (mode: ProjectsViewMode) => void;
 }
 
 const applyTheme = (theme: 'dark' | 'light') => {
@@ -31,6 +35,7 @@ export const useUIStore = create<UIState>()(
         isPanelOpen: false,
         activeView: 'overview',
         theme: 'dark',
+        projectsViewMode: 'list',
         openPanel: () => set({ isPanelOpen: true }, false, 'ui/openPanel'),
         closePanel: () => set({ isPanelOpen: false }, false, 'ui/closePanel'),
         setView: (view) => set({ activeView: view }, false, 'ui/setView'),
@@ -40,10 +45,15 @@ export const useUIStore = create<UIState>()(
             applyTheme(next);
             return { theme: next };
           }, false, 'ui/toggleTheme'),
+        setProjectsViewMode: (mode) =>
+          set({ projectsViewMode: mode }, false, 'ui/setProjectsViewMode'),
       }),
       {
         name: 'muninn-ui',
-        partialize: (state) => ({ theme: state.theme }),
+        partialize: (state) => ({
+          theme: state.theme,
+          projectsViewMode: state.projectsViewMode,
+        }),
       },
     ),
     { name: 'ui-store' },
