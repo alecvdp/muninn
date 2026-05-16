@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { userFacingError } from '../lib/errors';
 import type { SessionRow } from '../types';
 
 const PAGE_SIZE = 25;
@@ -82,7 +83,7 @@ export const useSessionsStore = create<SessionsState>()(
       if (filterProject) query = query.eq('project_id', filterProject);
       const { data, error } = await query;
       if (error) {
-        set({ isLoading: false, error: error.message }, false, 'sessions/fetch:error');
+        set({ isLoading: false, error: userFacingError(error.message) }, false, 'sessions/fetch:error');
         return;
       }
       const rows = data ?? [];
@@ -109,7 +110,7 @@ export const useSessionsStore = create<SessionsState>()(
       if (filterProject) query = query.eq('project_id', filterProject);
       const { data, error } = await query;
       if (error) {
-        set({ isFetchingMore: false, error: error.message }, false, 'sessions/fetchMore:error');
+        set({ isFetchingMore: false, error: userFacingError(error.message) }, false, 'sessions/fetchMore:error');
         return;
       }
       const rows = data ?? [];
@@ -177,5 +178,5 @@ export const useSessionsStore = create<SessionsState>()(
       set({ filterProject: filter }, false, 'sessions/filter:project');
       void get().fetchSessions();
     },
-  }), { name: 'sessions-store' }),
+  }), { name: 'sessions-store', enabled: import.meta.env.DEV }),
 );

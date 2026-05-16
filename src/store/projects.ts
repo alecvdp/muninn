@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { userFacingError } from '../lib/errors';
 import type { ProjectRow, ProjectInsert, ProjectUpdate } from '../types';
 
 export interface ProjectCounts {
@@ -92,7 +93,7 @@ export const useProjectsStore = create<ProjectsState>()(
         .order('updated_at', { ascending: false, nullsFirst: false });
 
       if (error) {
-        set({ isLoading: false, error: error.message }, false, 'projects/fetchProjects:error');
+        set({ isLoading: false, error: userFacingError(error.message) }, false, 'projects/fetchProjects:error');
         return;
       }
 
@@ -166,7 +167,7 @@ export const useProjectsStore = create<ProjectsState>()(
       const { data, error } = await supabase.from('projects').insert(project).select('*').single();
 
       if (error) {
-        set({ error: error.message }, false, 'projects/createProject:error');
+        set({ error: userFacingError(error.message) }, false, 'projects/createProject:error');
         return null;
       }
 
@@ -186,7 +187,7 @@ export const useProjectsStore = create<ProjectsState>()(
       const { data, error } = await supabase.from('projects').update(updates).eq('id', id).select('*').single();
 
       if (error) {
-        set({ error: error.message }, false, 'projects/updateProject:error');
+        set({ error: userFacingError(error.message) }, false, 'projects/updateProject:error');
         return null;
       }
 
@@ -206,7 +207,7 @@ export const useProjectsStore = create<ProjectsState>()(
       const { error } = await supabase.from('projects').delete().eq('id', id);
 
       if (error) {
-        set({ error: error.message }, false, 'projects/deleteProject:error');
+        set({ error: userFacingError(error.message) }, false, 'projects/deleteProject:error');
         return false;
       }
 
@@ -270,5 +271,5 @@ export const useProjectsStore = create<ProjectsState>()(
 
       return filtered;
     },
-  }), { name: 'projects-store' }),
+  }), { name: 'projects-store', enabled: import.meta.env.DEV }),
 );

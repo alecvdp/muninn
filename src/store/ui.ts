@@ -56,7 +56,7 @@ export const useUIStore = create<UIState>()(
         }),
       },
     ),
-    { name: 'ui-store' },
+    { name: 'ui-store', enabled: import.meta.env.DEV },
   ),
 );
 
